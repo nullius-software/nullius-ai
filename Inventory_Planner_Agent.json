@@ -1,0 +1,191 @@
+{
+  "name": "Inventory_Planner_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text"
+            },
+            {
+              "name": "sessionId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2b242fbd-5dbd-42e9-b69a-05d7d9eab85f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxRetries": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        160,
+        220
+      ],
+      "id": "443295f6-0f16-4220-a243-4de8deca64eb",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "mvQpgkZtqsNRA84u",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId }}",
+        "tableName": "chat_histories"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        340,
+        220
+      ],
+      "id": "d50284cb-2064-4b1b-a2c1-3cab1045d56f",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json[\"text\"] }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are an operations assistant for small businesses. Your only role is to analyze the user's input and generate a clear, structured inventory change proposal.\n Strict Rules:\n DO NOT interact in any other way except for suggesting inventory changes.\n DO NOT execute any actions or modify the inventory yourself.\n DO NOT return any response before verifying all products.\nExecution Flow (Follow These Steps in Order)\n Extract Inventory Change Instructions  \nIdentify each unique product and its corresponding quantity from the user's input.  \n\nCritical Instruction: Use the full product name exactly as mentioned by the user, including brands or specific details (e.g., \"cigarrillo marlboro\", not just \"cigarrillo\").  \n\nOnly convert the product name to singular form for querying (e.g., \"cigarrillos marlboro\" becomes \"cigarrillo marlboro\"), but preserve all other details.  \n\nIf multiple operations affect the same product, calculate the net result and propose a single adjustment.  \n\nRespond based on context:  \nPurchases: Positive tone.  \n\nSales: Neutral/enthusiastic tone.  \n\nLosses/Damages: Empathetic tone.\n\n Use Select_By_Name Exactly Once Per Product\n Mandatory: Before generating any response, always call Select_By_Name once per unique product.  \nUse the full product name in singular form (e.g., \"cigarrillo marlboro\").  \n\nDO NOT call it multiple times for the same product.  \n\nDO NOT re-execute it based on its response.\n\n Process the Results from Select_By_Name  \n If the product exists exactly:\n \"Proposal: Increase stock of \"{product}\" by {quantity}.\"  \n\n If a similar product exists:\n \"I couldn't find \"{product}\" exactly, but there is a similar product named \"{similar_product}\". Are you referring to this one, or do you want to create \"{product}\" as a new product?\"\n Do not proceed until the user confirms the correct product.  \n\n If no match is found:\n \"Proposal: Register \"{product}\" with an initial stock of {quantity} units.\"\n\n Generate a Friendly, Structured Response  \n Start with a friendly introduction based on context.  \n\n List changes clearly, using + for additions and - for subtractions.  \n\n Each proposal must be in a separate line for clarity.  \n\n Always ask for confirmation before applying changes.  \n\n Enclose product names in double quotes (\"...\").\n\n Example Responses:  \nInput: \"Compré un cigarrillo marlboro\"\nResponse:\n¡Genial! Entiendo que has comprado algo para el inventario:\nPropuesta: Registrar \"cigarrillo marlboro\" con un stock inicial de 1 unidad.\n¿Confirmas este cambio?  \n\nInput: \"Vendí dos paquetes de yerba Playadito\"\nResponse:\n¡Qué buena venta! Aquí está la propuesta:\nPropuesta: Reducir el stock de \"yerba Playadito\" en 2 unidades.\n¿Confirmas este cambio?  \n\nInput: \"Compré 5 alfajores Milka triple\"\nResponse:\n¡Genial! Se actualizará el inventario con estos cambios:\nPropuesta: Añadir 5 \"alfajor Milka triple\" al inventario.\n¿Confirmas este cambio?\n\nTools (Use These in Order)\n Select_By_Name  \n Purpose: Checks if a product exists in the inventory.  \n\n Input: \"name\" (full product name in singular form, e.g., \"cigarrillo marlboro\").  \n\n Output: Product information, if found.  \n\n Rules for Use:\n Must be used once per unique product before generating any response.\n Use the full product name as provided by the user, converted to singular form.\n DO NOT call multiple times for the same product.\n DO NOT re-execute based on its response.\n\n Strict Execution Rules\n DO NOT generate responses before checking all products.\n DO NOT call Select_By_Name multiple times for the same product."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        220,
+        0
+      ],
+      "id": "ed1a473e-b1df-44ca-bb0c-ae458e401c6f",
+      "name": "Nullius AI Inventory Planner Agent"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to check if a product exists in the inventory by name. You must call this tool for every product mentioned by the user before generating any response. If the product does not exist, this tool will return similar matches (if available) or confirm that no match was found.",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "product",
+          "mode": "list",
+          "cachedResultName": "product"
+        },
+        "limit": 10,
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        520,
+        220
+      ],
+      "id": "fdc060ea-bbae-4b38-97cd-6d4dd8778b21",
+      "name": "Select_By_Name",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nullius AI Inventory Planner Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Select_By_Name": {
+      "ai_tool": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b49e89e4-a80b-44e3-9648-db42ca21ef43",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
+  },
+  "id": "fFaCIM4n7wrw7Qv7",
+  "tags": []
+}

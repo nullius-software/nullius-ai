@@ -1,0 +1,493 @@
+{
+  "name": "Nullius_AI",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "14167a72-381b-47f6-904c-c0ada7f96180",
+      "name": "Telegram Trigger",
+      "webhookId": "b9002fc0-80d4-4d8a-8404-0a80fa3389f0",
+      "credentials": {
+        "telegramApi": {
+          "id": "pQrQaAdwncpOIh2u",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"message\"][\"text\"] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "7e63b0a0-35aa-497a-b71c-7f26e3be7457"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8686a3a8-155e-430c-8e08-632f318919f9",
+                    "leftValue": "={{ $json[\"message\"][\"voice\"] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "e3a4f3df-58ea-42fb-8a67-949da1368764",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE/getFile?file_id={{ $json[\"message\"][\"voice\"][\"file_id\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -340
+      ],
+      "id": "5286de41-7379-45d8-aebb-fb918b977711",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE\n/{{ $json[\"result\"][\"file_path\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -340
+      ],
+      "id": "72185002-c468-4c1a-951c-5a37ac2f1b70",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        760,
+        -340
+      ],
+      "id": "cff2a04c-36e9-4151-b2e1-7e9468843ae8",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "9CItlKmy7VAxHVcD",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are a tool-routing assistant. Your only responsibility is to determine which tool to forward the original chat input to and return the tool's response as the final output.\n\nBehavior:\n STRICT RULES:\n Route each request to exactly ONE tool per execution.\n DO NOT call multiple tools or re-run a tool based on its response.\n DO NOT modify or alter the input before sending it to the tool.\n DO NOT modify, process, or even consider the tool's response.\n Return the tool's response exactly as it is, without any modifications or additions.\n DO NOT retry the same tool after execution. Only run it ONCE.\n Critical Rule: Once a tool is called, execution MUST end immediately, and the tool's response must be returned as the final output.\n\nCommand:\nRoute all incoming requests to the correct tool only once per message and return the tool's response directly.\n\nAvailable Tools:\n**DB_Agent**\n**Inventory_Planner_Agent**\n\nRouting Logic:\n If the message involves inventory changes (buying, selling, adding, removing products):\n Call **Inventory_Planner_Agent**.\n Return the response from **Inventory_Planner_Agent** as the final output.\n DO NOT call any other tool after this. STOP execution.\n If the user confirms a proposed inventory change:\n Call **DB_Agent**, sending the confirmation as \"sql\" in natural language, short and direct.\n Return the response from **DB_Agent** as the final output.\n DO NOT call any other tool after this. STOP execution.\n If the message is unrelated to inventory or business:\n Generate a short response reminding the user that this bot is for inventory management.\n Return this response as the final output.\n DO NOT call any tool after this. STOP execution.\n\nExecution Rule (Critical!):\n Once a tool is called, DO NOT execute any other tool. STOP all processing immediately.\n DO NOT retry, loop, or trigger additional executions based on any tool’s response.\n The final output MUST be the response from the called tool or the reminder message if no tool applies."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        320,
+        -60
+      ],
+      "id": "2e972135-d4da-4d4f-8eae-0dd5cf9a4a91",
+      "name": "AI Agent CEO"
+    },
+    {
+      "parameters": {
+        "name": "Inventory_Planner_Agent",
+        "description": "Call this tool to retrieve an inventory plan to the user",
+        "workflowId": {
+          "__rl": true,
+          "value": "fFaCIM4n7wrw7Qv7",
+          "mode": "list",
+          "cachedResultName": "Inventory_Planner_Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+            "sessionId": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        780,
+        160
+      ],
+      "id": "5b78cd7f-372e-478e-aed5-82a4ac9a3928",
+      "name": "Inventory_Planner_Agent"
+    },
+    {
+      "parameters": {
+        "name": "DB_Agent",
+        "description": "Call this tool when need to manage database changes",
+        "workflowId": {
+          "__rl": true,
+          "value": "C1bf6htNpoReCQMU",
+          "mode": "list",
+          "cachedResultName": "DB_Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sessionId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "sql"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        600,
+        160
+      ],
+      "id": "499f8de2-f098-45df-ab50-83c963122a08",
+      "name": "DB_Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "text",
+          "maxRetries": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        160
+      ],
+      "id": "5c963140-2999-48d6-91e5-57c84d2d32bb",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "mvQpgkZtqsNRA84u",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Switch').item.json.message.chat.id }}",
+        "tableName": "chat_histories"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        420,
+        160
+      ],
+      "id": "0c30aaca-8940-4f42-be28-7c4ed0214694",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UfVzmrG031XMqDSZ",
+          "mode": "list",
+          "cachedResultName": "Response_Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $json.output }}",
+            "sessionId": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        -60
+      ],
+      "id": "974af974-624b-41e2-b90c-f60026b3ae28",
+      "name": "Response_Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent CEO": {
+      "main": [
+        [
+          {
+            "node": "Response_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory_Planner_Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB_Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent CEO",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "20357113-c14f-4d7f-8677-31cda532c385",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
+  },
+  "id": "NunfolCbZRyAhjuw",
+  "tags": []
+}
