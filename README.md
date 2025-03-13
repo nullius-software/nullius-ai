@@ -10,6 +10,18 @@ This bot allows users to manage inventory directly from Telegram. It processes s
 - Waits for user confirmation before making updates.
 - Updates the database and notifies the user once changes are applied.
 
+## CEO of Agents:
+![image](https://github.com/user-attachments/assets/aa734ec4-2777-42ae-a9f4-2563d46e3bc0)
+
+## Inventory Planner Agent:
+![image](https://github.com/user-attachments/assets/0c0c0a79-1760-448d-accf-78669275b2d2)
+
+## DB Agent:
+![image](https://github.com/user-attachments/assets/570d04d2-af75-4c33-aef9-506b33dfd4d6)
+
+## Response Agent:
+![image](https://github.com/user-attachments/assets/05faf10f-5fcc-45b8-9b9a-6e8eada5357f)
+
 ## 🔧 Technologies Used
 - **n8n** for workflow automation.
 - **Node.js** for backend logic.
