@@ -1,0 +1,105 @@
+{
+  "name": "Parse_Response_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text"
+            },
+            {
+              "name": "sessionId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a3d0c085-80c9-4c2a-9f2b-e49850d60d42",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        260,
+        220
+      ],
+      "id": "75d6f841-786f-492f-9cf5-35b891528f77",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "mvQpgkZtqsNRA84u",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are a text parsing agent. Your only task is to parse the message you receive and return it exactly as given, without modifying its content except for language translation.\n\nInstructions:\n🚨 STRICT RULES:\n✅ DO NOT change, add, or remove any content from the message.\n✅ DO NOT generate, interpret, or infer any kind of response.\n✅ DO NOT include any additional context, explanations, or comments.\n✅ DO NOT include anything related to n8n.\n✅ DO NOT reject, alter, or block the message. Return it as instructed.\n\n🔹 If the message is in a language different from Spanish, translate it fully and directly without shortening, summarizing, or omitting any part of the text.\n\n🔹 If the message is a question or user input, DO NOT answer it. Simply format and translate (if necessary).\n\nFormatting Rules (Only Allowed HTML Tags)\n✅ Use only the following Telegram-supported HTML tags:\n\n<b> → Bold\n<i> → Italic\n<u> → Underline\n<s> → Strikethrough\n<code> → Inline code\n<pre> → Code blocks\n<a href=\"URL\"> → Hyperlinks\n🚨 IMPORTANT:\n❌ DO NOT use <ul>, <br>, <span>, <d> or <p> tags.\n❌ DO NOT apply any additional formatting beyond the allowed tags.\n\nOutput Rules:\n✅ Return the message exactly as received, formatted using only the allowed HTML tags.\n✅ No extra text, explanations, or formatting outside the allowed tags.\n✅ DO NOT reject or block any message. Return it exactly as required.\n\nKey Fix: 🔥\n🛑 Under no circumstances should you generate a response. Your role is purely to format and translate, not to interpret, validate, or block the message."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        220,
+        0
+      ],
+      "id": "19c733ad-9b13-4723-aaeb-18f37ebd65cb",
+      "name": "Parse Response Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "31a3571d-2bf0-49ee-aa00-daa2f99fc820",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
+  },
+  "id": "UfVzmrG031XMqDSZ",
+  "tags": []
+}

@@ -10,6 +10,10 @@
             },
             {
               "name": "sessionId"
+            },
+            {
+              "name": "organizationId",
+              "type": "number"
             }
           ]
         }
@@ -25,6 +29,7 @@
     },
     {
       "parameters": {
+        "model": "google/gemini-2.0-flash-001",
         "options": {
           "maxRetries": 0
         }
@@ -49,7 +54,7 @@
         "promptType": "define",
         "text": "={{ $json.text }}",
         "options": {
-          "systemMessage": "=Role:\nYou are DB Agent, an expert assistant responsible for executing changes in a PostgreSQL database. You receive instructions in natural language and transform them into precise database operations.\nTask:\nInterpret the user's request and ensure that changes are correctly applied to the \"product\" table.  \nCheck if the product exists before making changes using **Select_By_Name** to retrieve the product's attributes by its name.  \n\nIf the product exists, **Update** it using **Update** and verify that the **Update** was successfully applied.  \n\nIf the product does not exist, create it using **Insert** and verify that the insertion was successfully executed.  \n\nConfirm the changes by generating a concise response directly in your output, but only after ensuring that the operation was executed correctly.\n\nTools Available:  \n**Select_By_Name**: Query the \"product\" table by product name to retrieve its existing attributes.  \n\n**Update**: Modify an existing product in the database and ensure the **Update** was applied.  \n\n**Insert**: Add a new product to the database if it does not exist, ensuring the quantity matches the user's request.\n\nExecution Logic:  \nAlways query the product first using **Select_By_Name** before modifying it.  \n\nIf the product exists, use **Update** to apply the requested changes and confirm that the **Update** was successfully applied.  \n\nIf the product does not exist, use **Insert** to create it with the specified quantity, then confirm that the insertion was successfully executed.  \n\nBefore generating the confirmation response, ensure that the database operation was actually performed.  \n\nDo not generate a confirmation message unless the change was successfully executed.\n\nResponse Format:\nThe confirmation must be short, clear, and explicitly mention the change. Examples:  \nStock actualizado: Sprite → 10 unidades.  \n\nAñadido \"Coca-Cola\" (12 unidades).  \n\nPrecio cambiado: iPhone → $999.99.  \n\nProducto duplicado fusionado: \"Nike Shoes\" → actualizado en lugar de re-añadido.\n\nKey Considerations:  \nAlways verify that the product exists before modifying it.  \n\nIf using **Update**, ensure that the change was successfully applied.  \n\nIf using **Insert**, confirm that the new product was successfully created.  \n\nOnly confirm changes if they were successfully executed in the database."
+          "systemMessage": "Role:\nYou are DB Agent, responsible for executing inventory changes in a PostgreSQL database. You receive an approved proposal and convert it into precise database operations.\nTask:\n Extract product names exactly as written between double quotes (\"\"). Do not modify, change, or infer any product names.\n Analyze the proposal:  \nIf it’s a stock or attribute change: Use Select_By_Name to check if the product exists.  \nIf it exists → Use Update.  \n\nIf it doesn’t exist → Use Insert.\n\nIf it’s a rename proposal (e.g., \"Renombrar producto 'x' a 'y'\"):  \nUse Select_By_Name with the old name (\"x\") to find the product.  \n\nIf it exists → Use Update to change the name to the new name (\"y\").  \n\nIf it doesn’t exist → Report that the product wasn’t found.\n\nIf it’s a delete proposal (e.g., \"Eliminar producto 'x'\"):  \nUse Select_By_Name with the product name (\"x\") to find the product.  \n\nIf it exists → Use Delete with the product’s id to remove it.  \n\nIf it doesn’t exist → Report that the product wasn’t found.\n Ensure the operation was successful before confirming it.\n\nTools:\n Select_By_Name → Retrieve product attributes.  \nInput: \"name\" (full product name as provided).  \n\nOutput: Product information, including id, if found.\n Update → Modify an existing product.  \n\nInput: Product attributes to change (e.g., name, quantity).\n Insert → Add a new product if it doesn’t exist.  \n\nInput: Product attributes (e.g., name, quantity).\n Delete → Remove an existing product.  \n\nInput: Product id.\n\nResponse Format:\n Stock updated: \"Sprite\" → 10 units.\n Added \"Coca-Cola\" (12 units).\n Price changed: \"iPhone\" → $999.99.\n Renamed: \"Old Name\" → \"New Name\".\n Deleted: \"Product Name\".\n Product \"Name\" not found for renaming.\n Product \"Name\" not found for deletion.\nSTRICT RULES (DO NOT BREAK ):\n DO NOT invent or assume product names, quantities, or changes that were not explicitly requested.\n DO NOT modify the product name unless explicitly requested in a rename proposal. Use it exactly as written between double quotes (\"\").\n DO NOT add, remove, or alter information beyond what is explicitly stated in the approved proposal.\n Only confirm changes that were successfully executed."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -72,9 +77,9 @@
         },
         "table": {
           "__rl": true,
-          "value": "product",
+          "value": "products",
           "mode": "list",
-          "cachedResultName": "product"
+          "cachedResultName": "products"
         },
         "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
         "where": {
@@ -82,6 +87,10 @@
             {
               "column": "name",
               "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
+            },
+            {
+              "column": "organization_id",
+              "value": "={{ $json.organizationId }}"
             }
           ]
         },
@@ -111,16 +120,17 @@
         },
         "table": {
           "__rl": true,
-          "value": "product",
+          "value": "products",
           "mode": "list",
-          "cachedResultName": "product"
+          "cachedResultName": "products"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
             "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
             "price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('price', ``, 'number') }}",
-            "stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('stock', ``, 'number') }}"
+            "stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('stock', ``, 'number') }}",
+            "organization_id": "={{ $json.organizationId }}"
           },
           "matchingColumns": [
             "id"
@@ -182,6 +192,16 @@
               "type": "dateTime",
               "canBeUsedToMatch": true,
               "removed": true
+            },
+            {
+              "id": "organization_id",
+              "displayName": "organization_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -214,9 +234,9 @@
         },
         "table": {
           "__rl": true,
-          "value": "product",
+          "value": "products",
           "mode": "list",
-          "cachedResultName": "product"
+          "cachedResultName": "products"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -224,7 +244,8 @@
             "price": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('price', ``, 'number') }}",
             "stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('stock', ``, 'number') }}",
             "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id__using_to_match_', ``, 'number') }}",
-            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}"
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
+            "organization_id": "={{ $json.organizationId }}"
           },
           "matchingColumns": [
             "id"
@@ -286,6 +307,16 @@
               "type": "dateTime",
               "canBeUsedToMatch": true,
               "removed": true
+            },
+            {
+              "id": "organization_id",
+              "displayName": "organization_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -301,6 +332,70 @@
       ],
       "id": "c25581d3-3ede-4783-9395-04b4690d2b3b",
       "name": "Update",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableName": "chat_histories",
+        "contextWindowLength": 1
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        -200
+      ],
+      "id": "ff2ae86e-15d4-4410-b2a4-4dbcc6a89824",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "products",
+          "mode": "list",
+          "cachedResultName": "products"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
+            },
+            {
+              "column": "organization_id",
+              "value": "={{ $json.organizationId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        320
+      ],
+      "id": "869e894c-c7e5-4d18-84a2-83b8723c0b56",
+      "name": "Delete",
       "credentials": {
         "postgres": {
           "id": "dnO3p7Dq5udUQp1l",
@@ -370,13 +465,35 @@
           }
         ]
       ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Nullius AI DB Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "Nullius AI DB Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c141c3f3-7e5f-428e-aa77-630ed23e2897",
+  "versionId": "c0faf57b-7942-401f-a4e1-dbc59dc82352",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"

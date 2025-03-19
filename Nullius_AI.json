@@ -1,5 +1,5 @@
 {
-  "name": "Nullius_AI",
+  "name": "Nullius_AI v2",
   "nodes": [
     {
       "parameters": {
@@ -11,16 +11,65 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
-        -220,
-        0
+        1060,
+        140
       ],
-      "id": "14167a72-381b-47f6-904c-c0ada7f96180",
+      "id": "60cd3ef4-febc-4d6f-b7aa-c7e0b909f59a",
       "name": "Telegram Trigger",
-      "webhookId": "b9002fc0-80d4-4d8a-8404-0a80fa3389f0",
+      "webhookId": "38469200-ea17-4126-95ac-6c18bb1b5bf9",
       "credentials": {
         "telegramApi": {
           "id": "pQrQaAdwncpOIh2u",
           "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE/getFile?file_id={{ $json[\"message\"][\"voice\"][\"file_id\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2380,
+        -20
+      ],
+      "id": "3b935be8-44e0-4465-8980-158448edf3c5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE\n/{{ $json[\"result\"][\"file_path\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2540,
+        -20
+      ],
+      "id": "9f3ecd3e-15b7-4902-8318-651711c89483",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2680,
+        -20
+      ],
+      "id": "38dab5d2-35a4-403c-b956-015f97ee4b30",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "9CItlKmy7VAxHVcD",
+          "name": "OpenAi account 2"
         }
       }
     },
@@ -38,11 +87,11 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json[\"message\"][\"text\"] }}",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.keys().includes('text') }}",
                     "rightValue": "",
                     "operator": {
-                      "type": "string",
-                      "operation": "exists",
+                      "type": "boolean",
+                      "operation": "true",
                       "singleValue": true
                     },
                     "id": "7e63b0a0-35aa-497a-b71c-7f26e3be7457"
@@ -64,11 +113,11 @@
                 "conditions": [
                   {
                     "id": "8686a3a8-155e-430c-8e08-632f318919f9",
-                    "leftValue": "={{ $json[\"message\"][\"voice\"] }}",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.keys().includes('voice') }}",
                     "rightValue": "",
                     "operator": {
-                      "type": "object",
-                      "operation": "exists",
+                      "type": "boolean",
+                      "operation": "true",
                       "singleValue": true
                     }
                   }
@@ -86,82 +135,36 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -40,
-        0
+        2860,
+        140
       ],
-      "id": "e3a4f3df-58ea-42fb-8a67-949da1368764",
+      "id": "5529e35c-e1b0-44fe-8169-169db859c9c1",
       "name": "Switch"
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE/getFile?file_id={{ $json[\"message\"][\"voice\"][\"file_id\"] }}",
-        "options": {}
+        "model": "google/gemini-2.0-flash-001",
+        "options": {
+          "maxRetries": 0
+        }
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
       "position": [
-        320,
-        -340
+        3500,
+        540
       ],
-      "id": "5286de41-7379-45d8-aebb-fb918b977711",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "url": "=https://api.telegram.org/file/bot7769148819:AAEGKUg9zov8OepeTLwlB3mzF9qkAC4nnRE\n/{{ $json[\"result\"][\"file_path\"] }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        540,
-        -340
-      ],
-      "id": "72185002-c468-4c1a-951c-5a37ac2f1b70",
-      "name": "HTTP Request1"
-    },
-    {
-      "parameters": {
-        "resource": "audio",
-        "operation": "transcribe",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
-      "position": [
-        760,
-        -340
-      ],
-      "id": "cff2a04c-36e9-4151-b2e1-7e9468843ae8",
-      "name": "OpenAI",
+      "id": "411eada0-e609-4290-9c6a-65be88fe6df5",
+      "name": "Gemini-2.0",
       "credentials": {
-        "openAiApi": {
-          "id": "9CItlKmy7VAxHVcD",
-          "name": "OpenAi account 2"
+        "openRouterApi": {
+          "id": "mvQpgkZtqsNRA84u",
+          "name": "OpenRouter account"
         }
       }
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.message.text }}",
-        "options": {
-          "systemMessage": "=Role:\nYou are a tool-routing assistant. Your only responsibility is to determine which tool to forward the original chat input to and return the tool's response as the final output.\n\nBehavior:\n STRICT RULES:\n Route each request to exactly ONE tool per execution.\n DO NOT call multiple tools or re-run a tool based on its response.\n DO NOT modify or alter the input before sending it to the tool.\n DO NOT modify, process, or even consider the tool's response.\n Return the tool's response exactly as it is, without any modifications or additions.\n DO NOT retry the same tool after execution. Only run it ONCE.\n Critical Rule: Once a tool is called, execution MUST end immediately, and the tool's response must be returned as the final output.\n\nCommand:\nRoute all incoming requests to the correct tool only once per message and return the tool's response directly.\n\nAvailable Tools:\n**DB_Agent**\n**Inventory_Planner_Agent**\n\nRouting Logic:\n If the message involves inventory changes (buying, selling, adding, removing products):\n Call **Inventory_Planner_Agent**.\n Return the response from **Inventory_Planner_Agent** as the final output.\n DO NOT call any other tool after this. STOP execution.\n If the user confirms a proposed inventory change:\n Call **DB_Agent**, sending the confirmation as \"sql\" in natural language, short and direct.\n Return the response from **DB_Agent** as the final output.\n DO NOT call any other tool after this. STOP execution.\n If the message is unrelated to inventory or business:\n Generate a short response reminding the user that this bot is for inventory management.\n Return this response as the final output.\n DO NOT call any tool after this. STOP execution.\n\nExecution Rule (Critical!):\n Once a tool is called, DO NOT execute any other tool. STOP all processing immediately.\n DO NOT retry, loop, or trigger additional executions based on any tool’s response.\n The final output MUST be the response from the called tool or the reminder message if no tool applies."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        320,
-        -60
-      ],
-      "id": "2e972135-d4da-4d4f-8eae-0dd5cf9a4a91",
-      "name": "AI Agent CEO"
-    },
-    {
-      "parameters": {
-        "name": "Inventory_Planner_Agent",
-        "description": "Call this tool to retrieve an inventory plan to the user",
         "workflowId": {
           "__rl": true,
           "value": "fFaCIM4n7wrw7Qv7",
@@ -172,65 +175,10 @@
           "mappingMode": "defineBelow",
           "value": {
             "text": "={{ $('Telegram Trigger').item.json.message.text }}",
-            "sessionId": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
-          },
-          "matchingColumns": [
-            "text"
-          ],
-          "schema": [
-            {
-              "id": "text",
-              "displayName": "text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "sessionId",
-              "displayName": "sessionId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2,
-      "position": [
-        780,
-        160
-      ],
-      "id": "5b78cd7f-372e-478e-aed5-82a4ac9a3928",
-      "name": "Inventory_Planner_Agent"
-    },
-    {
-      "parameters": {
-        "name": "DB_Agent",
-        "description": "Call this tool when need to manage database changes",
-        "workflowId": {
-          "__rl": true,
-          "value": "C1bf6htNpoReCQMU",
-          "mode": "list",
-          "cachedResultName": "DB_Agent"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
             "sessionId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+            "organizationId": "={{ $('Find Telegram ID').item.json.organization_id }}"
           },
-          "matchingColumns": [
-            "sql"
-          ],
+          "matchingColumns": [],
           "schema": [
             {
               "id": "text",
@@ -239,8 +187,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "sessionId",
@@ -249,65 +196,32 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
+              "type": "string"
+            },
+            {
+              "id": "organizationId",
+              "displayName": "organizationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
               "removed": false
             }
           ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
       "position": [
-        600,
-        160
+        3800,
+        140
       ],
-      "id": "499f8de2-f098-45df-ab50-83c963122a08",
-      "name": "DB_Agent"
-    },
-    {
-      "parameters": {
-        "options": {
-          "responseFormat": "text",
-          "maxRetries": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        240,
-        160
-      ],
-      "id": "5c963140-2999-48d6-91e5-57c84d2d32bb",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "mvQpgkZtqsNRA84u",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Switch').item.json.message.chat.id }}",
-        "tableName": "chat_histories"
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
-      "typeVersion": 1.3,
-      "position": [
-        420,
-        160
-      ],
-      "id": "0c30aaca-8940-4f42-be28-7c4ed0214694",
-      "name": "Postgres Chat Memory",
-      "credentials": {
-        "postgres": {
-          "id": "dnO3p7Dq5udUQp1l",
-          "name": "Postgres account"
-        }
-      }
+      "id": "9f360f82-dac9-427a-962c-94250d7b915f",
+      "name": "Inventory Planner Agent"
     },
     {
       "parameters": {
@@ -352,11 +266,1160 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        740,
+        4140,
+        140
+      ],
+      "id": "c604cf61-8bb7-4fdc-b0bf-1f7f90dddc60",
+      "name": "Parse Response Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are a friendly assistant for non-inventory inputs.\nInstructions:  \nRespond with a short, polite intro (1 sentence) addressing the user's message.  \n\nAdd: \"I’m here to help manage your inventory—let me know about stock changes!\"  \n\nKeep it under 3 sentences, no extra details.  \n\nDo not suggest inventory changes or call tools.\n\nExamples:  \nInput: \"What's the weather?\"\nOutput: \"Not sure about the weather! I’m here to help manage your inventory—let me know about stock changes!\"  \n\nInput: \"Tell me a joke.\"\nOutput: \"I’m better with stock than jokes! I’m here to help manage your inventory—let me know about stock changes!\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3820,
+        300
+      ],
+      "id": "3032902a-6d13-41a5-87a8-ef0cf34bb32a",
+      "name": "Not Inventory Response Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4360,
+        140
+      ],
+      "id": "c98fe74f-3b00-4e57-92ed-0ea6510889ea",
+      "name": "Response",
+      "webhookId": "e9471d61-9ebb-4d12-bc49-9a17b2aaf0df",
+      "credentials": {
+        "telegramApi": {
+          "id": "pQrQaAdwncpOIh2u",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "C1bf6htNpoReCQMU",
+          "mode": "list",
+          "cachedResultName": "DB_Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "sessionId": "={{ $json.session_id }}",
+            "organizationId": "={{ $('Find Telegram ID').item.json.organization_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "organizationId",
+              "displayName": "organizationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3900,
         -60
       ],
-      "id": "974af974-624b-41e2-b90c-f60026b3ae28",
-      "name": "Response_Agent"
+      "id": "861193c1-504b-4da0-b8b8-2f83146520ca",
+      "name": "DB Agent"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.message.content }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "confirmation",
+              "description": "The message confirms that inventory changes have already been applied."
+            },
+            {
+              "category": "proposal",
+              "description": "The message contains a proposed inventory change that requires confirmation. It lists modifications such as stock additions, removals, or new product registrations but does not indicate that the changes have already been executed."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        3500,
+        -180
+      ],
+      "id": "391d4b8f-0283-4bc1-b307-70de1876d47a",
+      "name": "What Last Response Is About"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "chat_histories",
+          "mode": "list",
+          "cachedResultName": "chat_histories"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3040,
+        140
+      ],
+      "id": "a386aaf1-cf1a-4c5e-8843-c811428ac311",
+      "name": "Select Last Message",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "confirmation",
+              "description": "The message explicitly confirms a previously proposed inventory change without introducing new modifications. It does not request additional stock updates, product additions, or removals—only acknowledges and approves the suggested changes."
+            },
+            {
+              "category": "about inventory",
+              "description": "The message is related to inventory management, including stock updates, product additions or removals, quantity adjustments, price changes, or any modifications affecting product availability. This also includes corrections to previously proposed inventory changes, such as adjusting product names, quantities, or other details before confirmation.  Additionally, any message referring to the acquisition of any type of asset should be categorized as \"about inventory\", regardless of the product type."
+            },
+            {
+              "category": "not about inventory",
+              "description": "The message is unrelated to inventory management. It may pertain to general business inquiries, customer service, technical issues, or any other topic not involving stock or product modifications."
+            },
+            {
+              "category": "inventory inquiry",
+              "description": "The message requests information about the inventory without proposing changes. This includes questions such as:  Checking if a product exists or finding similar product names. Retrieving the number of products in stock. Listing products based on filters like price, category, or availability. Any other query related to inventory data that does not involve modifications."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "=Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json.\nThe last response given to user is: {{ $json.message.content }}\n\n# IMPORTANT\nYou can only classify the text in one category. Do not rerun at obtain a response of one."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        140
+      ],
+      "id": "63b36cba-1c1f-4a62-a9af-961f28a20e9b",
+      "name": "User Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"output\": \"⚠️ Los cambios ya fueron aplicados.\\n\\n Tu confirmación ya fue procesada y el inventario se ha actualizado correctamente. ✅\\n\\n Si necesitas hacer nuevos cambios, envíame una nueva solicitud. 📦\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3900,
+        -260
+      ],
+      "id": "4315bbd1-a9b3-4bab-84c0-afccc9f5f6ba",
+      "name": "Changes Already Applied Response"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"output\": \"🔄 Processing your request...\\n\\n Please wait a moment while we handle your request. ⏳\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        140
+      ],
+      "id": "50971ca2-6403-4e27-8a90-c042fcd47996",
+      "name": "Loading"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI(\"sql\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        3980,
+        740
+      ],
+      "id": "3cdfaf5b-a782-4013-8d9d-2ce2eabdcab0",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are Inventory Inquiry Agent, responsible for retrieving inventory information from a PostgreSQL database. You CANNOT modify, insert, delete, or update any data.\nTask:\n NEVER modify inventory data. Only retrieve information.\n Extract the user's request and generate a SQL query to fetch the required data.\n DO NOT assume column names. First, run a query to retrieve the schema of the \"products\" table.\n Format the query result exactly as requested by the user.\n ALWAYS include the condition WHERE organization_id = {{ $('Find Telegram ID').item.json.organization_id }} in every query to filter results by the user's organization.\nTools:\n Postgres → Executes SQL queries.\nInput: \"sql\" (SQL query to fetch the required data).\nOutput: Query results in a structured format.  \nExecution Flow:\n First, retrieve the schema of the \"products\" table to confirm the correct column names.\n Then, construct a SELECT query based on the user’s request, always adding WHERE organization_id = {{ $('Find Telegram ID').item.json.organization_id }} to filter by the user's organization.\n Execute the query using Postgres and return the results without modification.\nSTRICT RULES:\n DO NOT modify, insert, update, or delete any data.\n DO NOT assume column names. Always retrieve them first.\n ONLY query the \"products\" table.\n ONLY generate SELECT queries.\n ALWAYS filter results by organization_id = {{ $('Find Telegram ID').item.json.organization_id }}.\n Ensure the response matches the format requested by the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3820,
+        520
+      ],
+      "id": "fb673180-1f4f-455a-ad6e-96c1ea71baa2",
+      "name": "Inventory Inquiry Agent"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_telegram_chats",
+          "mode": "list",
+          "cachedResultName": "user_telegram_chats"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "telegram_chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1400,
+        140
+      ],
+      "id": "474b000c-f987-46bd-9797-a482f76aed32",
+      "name": "Find Telegram ID",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1760,
+        140
+      ],
+      "id": "499c3c01-caee-4819-8698-c459ec6970a8",
+      "name": "Find User ID",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.user_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "beb1e0d3-88ef-401a-9e26-49e700652f3c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "finded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d280f4e5-2fc1-4390-bcff-69907276aa79",
+                    "leftValue": "={{ $json.user_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not finded"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1560,
+        140
+      ],
+      "id": "69667ca7-272e-4911-8ba3-3c7fddb1e882",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $json.data.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        340
+      ],
+      "id": "0e6bc075-547e-41cf-bc8e-48c00e7b25c6",
+      "name": "Find User By Email",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "beb1e0d3-88ef-401a-9e26-49e700652f3c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "finded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d280f4e5-2fc1-4390-bcff-69907276aa79",
+                    "leftValue": "={{ $json.id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "not finded"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1480,
+        340
+      ],
+      "id": "2ff68b8d-423c-48b3-988e-ec7b1348d11b",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "message": "No estás registrado. Regístrate o inicia sesión con tus credenciales aquí.",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "email",
+              "fieldType": "email",
+              "placeholder": "Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "password",
+              "fieldType": "password",
+              "placeholder": "Pasword",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "messageButtonLabel": "Click here!"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        980,
+        340
+      ],
+      "id": "9dc127db-3aae-4c76-b661-491f4f555cf6",
+      "name": "Obtain Credentials",
+      "webhookId": "75816491-4b2b-4964-9aee-58a0754c553c",
+      "credentials": {
+        "telegramApi": {
+          "id": "pQrQaAdwncpOIh2u",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://real-estate-keycloak-render.onrender.com/admin/realms/nullius-realm/users",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer {{ $json.access_token }}\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{ $('Obtain Credentials').item.json.data.email }}\",\n  \"enabled\": true,\n  \"credentials\": [\n    {\n      \"type\": \"password\",\n      \"value\": \"{{ $('Obtain Credentials').item.json.data.password }}\",\n      \"temporary\": false\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        560
+      ],
+      "id": "8abfeea7-76be-40ee-932f-85f80a3b6ebb",
+      "name": "Create User In Keycloak"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.email }}",
+            "password": "={{ $json.password }}",
+            "password_iv": "={{ $json.iv }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "password_iv",
+              "displayName": "password_iv",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1680,
+        560
+      ],
+      "id": "6f216773-3edc-418a-a0bf-dbdac243dc2f",
+      "name": "Create User",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_telegram_chats",
+          "mode": "list",
+          "cachedResultName": "user_telegram_chats"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.id }}",
+            "telegram_chat_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "organization_id",
+              "displayName": "organization_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1780,
+        320
+      ],
+      "id": "0af886b4-d7df-4a87-974d-bf6c85c4557d",
+      "name": "Save Chat As Allowed",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://real-estate-keycloak-render.onrender.com/realms/nullius-realm/protocol/openid-connect/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "{{ $vars.keycloak_admin_client }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "={{ $vars.keycloak_admin_secret }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1140,
+        560
+      ],
+      "id": "54153b63-8b71-49da-b754-b1e1b6d86557",
+      "name": "Obtain Admin Credentials"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://real-estate-keycloak-render.onrender.com/realms/nullius-realm/protocol/openid-connect/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "password"
+            },
+            {
+              "name": "client_id",
+              "value": "={{ $vars.keycloak_client }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "={{ $vars.keycloak_secret }}"
+            },
+            {
+              "name": "username",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ $json.password }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        140
+      ],
+      "id": "d01e1443-98b2-43eb-9b39-fb356c0343ff",
+      "name": "Login"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst key = $vars.encrypt_key;\nconst iv = crypto.randomBytes(16);\nconst cipher = crypto.createCipheriv('aes-256-cbc', key, iv);\n\nlet encrypted = cipher.update($('Obtain Credentials').first().json.data.password, 'utf8', 'hex');\nencrypted += cipher.final('hex');\n\nreturn {\n  email: $('Obtain Credentials').first().json.data.email,\n  password: encrypted,\n  iv: iv.toString('hex')\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        560
+      ],
+      "id": "e69ff73c-a235-4dc2-8c26-ac2c4782e8cd",
+      "name": "Encrypt Password"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst key = $vars.encrypt_key;\nconst iv = Buffer.from($input.first().json.password_iv, 'hex');\nconst decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);\n\nlet decrypted = decipher.update($input.first().json.password, 'hex', 'utf8');\ndecrypted += decipher.final('utf8');\n\nreturn { email: $input.first().json.email, password: decrypted };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        140
+      ],
+      "id": "0f5e971b-9b82-4c85-a227-3b7346a9174f",
+      "name": "Decrypt Password"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "message": "No estás asignado a ninguna organización. Crea una aquí.",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Organization Name",
+              "placeholder": "Organization Name",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "messageButtonLabel": "Click here!"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        340
+      ],
+      "id": "45a1df1c-9623-461e-971e-347d26011042",
+      "name": "Create Organization",
+      "webhookId": "75816491-4b2b-4964-9aee-58a0754c553c",
+      "credentials": {
+        "telegramApi": {
+          "id": "pQrQaAdwncpOIh2u",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "organizations",
+          "mode": "list",
+          "cachedResultName": "organizations"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.data[\"Organization Name\"] }}",
+            "creator": "={{ $('Find User ID').item.json.id || $('Create User').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creator",
+              "displayName": "creator",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2360,
+        340
+      ],
+      "id": "4f5564c8-58f9-4d6b-937f-1453b3ae67fd",
+      "name": "Create Organization1",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_telegram_chats",
+          "mode": "list",
+          "cachedResultName": "user_telegram_chats"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_chat_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "organization_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "telegram_chat_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "telegram_chat_id",
+              "displayName": "telegram_chat_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "organization_id",
+              "displayName": "organization_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2540,
+        340
+      ],
+      "id": "267cbc3c-d170-4402-b839-fe3de1dc44cb",
+      "name": "Update Active Chat Organization",
+      "credentials": {
+        "postgres": {
+          "id": "dnO3p7Dq5udUQp1l",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Find Telegram ID').item.json.organization_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "0e5f8208-52a3-4de6-a00a-98e6042d83bb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Organization Finded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1fbe41ce-4ad6-494f-8e50-bdf87146f612",
+                    "leftValue": "={{ $('Find Telegram ID').item.json.organization_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Organization Not Finded"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1920,
+        140
+      ],
+      "id": "aa0d8e5b-8a60-46c6-96bd-519287b494c9",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"output\": \"🔄 Processing your request...\\n\\n Please wait a moment while we handle your request. ⏳\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1140,
+        340
+      ],
+      "id": "ab7b38ea-1c9c-44ec-ab45-3e34e5688d1f",
+      "name": "Loading1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"output\": \"🔄 Processing your request...\\n\\n Please wait a moment while we handle your request. ⏳\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        340
+      ],
+      "id": "4797073c-8bf6-4a49-a840-74ff4f75697d",
+      "name": "Loading2"
     }
   ],
   "pinData": {},
@@ -365,25 +1428,12 @@
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Loading",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch": {
-      "main": [
-        [
+          },
           {
-            "node": "AI Agent CEO",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "HTTP Request",
+            "node": "Find Telegram ID",
             "type": "main",
             "index": 0
           }
@@ -416,63 +1466,442 @@
       "main": [
         [
           {
-            "node": "AI Agent CEO",
+            "node": "Select Last Message",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent CEO": {
+    "Switch": {
       "main": [
         [
           {
-            "node": "Response_Agent",
+            "node": "Select Last Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Inventory_Planner_Agent": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent CEO",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "DB_Agent": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent CEO",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model": {
+    "Gemini-2.0": {
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent CEO",
+            "node": "What Last Response Is About",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Not Inventory Response Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "User Input",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Inventory Inquiry Agent",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Postgres Chat Memory": {
-      "ai_memory": [
+    "Inventory Planner Agent": {
+      "main": [
         [
           {
-            "node": "AI Agent CEO",
-            "type": "ai_memory",
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Inventory Response Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What Last Response Is About": {
+      "main": [
+        [
+          {
+            "node": "Changes Already Applied Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DB Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Select Last Message": {
+      "main": [
+        [
+          {
+            "node": "User Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Input": {
+      "main": [
+        [
+          {
+            "node": "What Last Response Is About",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inventory Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Inventory Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inventory Inquiry Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Changes Already Applied Response": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loading": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "Inventory Inquiry Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory Inquiry Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Telegram ID": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User ID": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Find User ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtain Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User By Email": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtain Credentials": {
+      "main": [
+        [
+          {
+            "node": "Loading1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find User By Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Save Chat As Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtain Admin Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create User In Keycloak": {
+      "main": [
+        [
+          {
+            "node": "Encrypt Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create User": {
+      "main": [
+        [
+          {
+            "node": "Save Chat As Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtain Admin Credentials": {
+      "main": [
+        [
+          {
+            "node": "Create User In Keycloak",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Chat As Allowed": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encrypt Password": {
+      "main": [
+        [
+          {
+            "node": "Create User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decrypt Password": {
+      "main": [
+        [
+          {
+            "node": "Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Organization": {
+      "main": [
+        [
+          {
+            "node": "Create Organization1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loading2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Organization1": {
+      "main": [
+        [
+          {
+            "node": "Update Active Chat Organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Active Chat Organization": {
+      "main": [
+        [
+          {
+            "node": "Find Telegram ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "Decrypt Password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loading1": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loading2": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Agent",
+            "type": "main",
             "index": 0
           }
         ]
@@ -483,11 +1912,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "20357113-c14f-4d7f-8677-31cda532c385",
+  "versionId": "b6abe3ea-b35a-47ee-8a6a-fb8ed4219066",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
   },
-  "id": "NunfolCbZRyAhjuw",
+  "id": "O8oGcm77OtZpXHFa",
   "tags": []
 }
