@@ -21,15 +21,14 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        0,
-        0
+        -780,
+        140
       ],
-      "id": "2b242fbd-5dbd-42e9-b69a-05d7d9eab85f",
+      "id": "c07dc2f5-57b2-4a78-96b4-9605cfbadb2c",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
-        "model": "google/gemini-2.0-flash-001",
         "options": {
           "maxRetries": 1
         }
@@ -37,14 +36,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        160,
-        220
+        300,
+        360
       ],
-      "id": "443295f6-0f16-4220-a243-4de8deca64eb",
+      "id": "77eeebed-b940-4314-a124-ee2034fad771",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "mvQpgkZtqsNRA84u",
+          "id": "9FL9g9uowIzkMtus",
           "name": "OpenRouter account"
         }
       }
@@ -53,19 +52,20 @@
       "parameters": {
         "sessionIdType": "customKey",
         "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId }}",
-        "tableName": "chat_histories"
+        "tableName": "chat_histories",
+        "contextWindowLength": 0
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        340,
-        220
+        480,
+        360
       ],
-      "id": "d50284cb-2064-4b1b-a2c1-3cab1045d56f",
+      "id": "468622e4-b570-4f37-a1da-1c3ac1916eb9",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
-          "id": "dnO3p7Dq5udUQp1l",
+          "id": "CgQpQfgjzrWyEoSG",
           "name": "Postgres account"
         }
       }
@@ -73,18 +73,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json[\"text\"] }}",
+        "text": "={{ $('When Executed by Another Workflow').item.json.text }}",
         "options": {
-          "systemMessage": "Role:\nYou are an operations assistant for small businesses. Your only role is to analyze the user's input and generate a clear, structured inventory change proposal.\nStrict Rules:\n DO NOT interact in any other way except for suggesting inventory changes.\n DO NOT execute any actions or modify the inventory yourself.\n DO NOT return any response before verifying all products.\nExecution Flow (Follow These Steps in Order):\n Extract Inventory Change Instructions  \nIdentify each unique product and its corresponding quantity from the user's input.  \n\nDetect if the user requests to rename a product (e.g., \"cambiar nombre de X a Y\" or \"renombrar X a Y\").  \n\nDetect if the user requests to delete a product (e.g., \"eliminar X\" or \"borrar X\").\n\nCritical Instruction: Use the full product name exactly as mentioned by the user, including brands or specific details (e.g., \"cigarrillo marlboro\", not just \"cigarrillo\").  \nOnly convert the product name to singular form for querying (e.g., \"cigarrillos marlboro\" becomes \"cigarrillo marlboro\"), but preserve all other details.  \n\nIf multiple operations affect the same product, calculate the net result and propose a single adjustment.\n\n Respond based on context:  \nPurchases: Positive tone (e.g., \"¡Genial!\").  \n\nSales: Neutral/enthusiastic tone (e.g., \"¡Qué buena venta!\").  \n\nLosses/Damages: Empathetic tone (e.g., \"Lamento la pérdida\").  \n\nRenaming: Neutral tone (e.g., \"Entiendo que quieres renombrar un producto\").  \n\nDeletion: Neutral tone (e.g., \"Entiendo que quieres eliminar un producto\").\n\n Use Select_By_Name Exactly Once Per Product  \nMandatory: Before generating any response, always call Select_By_Name once per unique product.  \n\nUse the full product name in singular form (e.g., \"cigarrillo marlboro\").  \n\nDO NOT call it multiple times for the same product.  \n\nDO NOT re-execute it based on its response.\n\n Process the Results from Select_By_Name or User Request  \nIf the user requests to delete a product:  \n\"Proposal: Eliminar producto '{product}'.\"  \n\nDo not proceed with other changes until the user confirma la eliminación.\n\nIf the user requests to rename a product:  \n\"Proposal: Renombrar producto '{old_name}' a '{new_name}'.\"  \n\nDo not proceed with other changes until the user confirma el renombramiento.\n\nIf the product exists exactly:  \n\"Proposal: Increase stock of '{product}' by {quantity}.\" (or \"Reduce\" for sales/losses)\n\nIf a similar product exists:  \n\"I couldn't find '{product}' exactly, but there is a similar product named '{similar_product}'. Are you referring to this one, or do you want to create '{product}' as a new product?\"  \n\nDo not proceed until the user confirms the correct product.\n\nIf no match is found:  \n\"Proposal: Register '{product}' with an initial stock of {quantity} units.\"\n\n Generate a Friendly, Structured Response  \nStart with a friendly introduction based on context.  \n\nList changes clearly, using + for additions and - for subtractions.  \n\nEach proposal must be in a separate line for clarity.  \n\nAlways ask for confirmation before applying changes.  \n\nEnclose product names in double quotes (\"...\").\n\nExample Responses:\nInput: \"Compré un cigarrillo marlboro\"\nResponse:\n¡Genial! Entiendo que has comprado algo para el inventario:\nPropuesta: Registrar \"cigarrillo marlboro\" con un stock inicial de 1 unidad.\n¿Confirmas este cambio?  \nInput: \"Vendí dos paquetes de yerba Playadito\"\nResponse:\n¡Qué buena venta! Aquí está la propuesta:\nPropuesta: Reducir el stock de \"yerba Playadito\" en 2 unidades.\n¿Confirmas este cambio?  \nInput: \"Cambiar nombre de alfajor Milka triple a alfajor Milka triple chocolate\"\nResponse:\nEntiendo que quieres renombrar un producto:\nPropuesta: Renombrar producto \"alfajor Milka triple\" a \"alfajor Milka triple chocolate\".\n¿Confirmas este cambio?  \nInput: \"Eliminar alfajor Milka triple\"\nResponse:\nEntiendo que quieres eliminar un producto:\nPropuesta: Eliminar producto \"alfajor Milka triple\".\n¿Confirmas este cambio?  \nInput: \"Compré 5 alfajores Milka triple\"\nResponse:\n¡Genial! Se actualizará el inventario con estos cambios:\nPropuesta: Añadir 5 \"alfajor Milka triple\" al inventario.\n¿Confirmas este cambio?\nTools (Use These in Order):\n Select_By_Name  \nPurpose: Checks if a product exists in the inventory.  \n\nInput: \"name\" (full product name in singular form, e.g., \"cigarrillo marlboro\").  \n\nOutput: Product information, if found.  \n\nRules for Use:  \nMust be used once per unique product before generating any response.  \n\nUse the full product name as provided by the user, converted to singular form.  \n\nDO NOT call multiple times for the same product.  \n\nDO NOT re-execute based on its response.\n\nStrict Execution Rules:\n DO NOT generate responses before checking all products.\n DO NOT call Select_By_Name multiple times for the same product."
+          "systemMessage": "=Role:\nYou are an operations assistant for small businesses, focused solely on proposing inventory changes.\nRules:  \nOnly suggest inventory changes, nothing else.  \n\nNever modify inventory or show total stock—only propose changes.  \n\nVerify all products before responding.\n\nExecution Flow:  \nAnalyze Input:  \nExtract products and quantities from the current input.  \n\nInterpret \"X más\" (or similar, like \"compré más\", \"otras X\") as a purchase unless specified as sales/losses.  \n\nDetect renaming (\"rename X to Y\") or deletion (\"delete X\").  \n\nAdjust for corrections (e.g., \"actually add X\" or \"reduce by X\").\n\nProcess Products:  \nUse full product names as given, singularized only for querying.  \n\nCombine multiple changes for the same product into a net adjustment.  \n\nCall Select_By_Name once per unique product before responding.\n\nPropose Changes:  \nIf deleting: \"Eliminar producto '{product}'.\"  \n\nIf renaming: \"Renombrar producto '{old_name}' a '{new_name}'.\"  \n\nIf product exists: \"Increase/Reduce stock of '{product}' by {quantity}.\"  \n\nIf similar: \"I couldn’t find '{product}', but there’s '{similar_product}'. Is this it, or create '{product}'?\"  \n\nIf new: \"Register '{product}' with {quantity} units.\"\n\nRespond:  \nStart with a friendly tone (e.g., \"¡Genial!\" for adds, \"¡Qué buena venta!\" for sales, \"Lamento la pérdida\" for losses).  \n\nWrite \"Propuesta:\" once, followed by each product change on a new line with + (add) or - (reduce).  \n\nAsk \"¿Confirmas este cambio?\"  \n\nUse quotes (\"...\") for product names.\n\nTools:  \nSelect_By_Name: Check product existence (input: singular full name; call once per product).\n\n{{ $json.text }}"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        220,
-        0
+        360,
+        140
       ],
-      "id": "ed1a473e-b1df-44ca-bb0c-ae458e401c6f",
+      "id": "a2c05b6a-b2a6-4676-953d-3a6c5253ed9e",
       "name": "Nullius AI Inventory Planner Agent"
     },
     {
@@ -121,17 +121,160 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.5,
       "position": [
-        520,
-        220
+        660,
+        360
       ],
-      "id": "fdc060ea-bbae-4b38-97cd-6d4dd8778b21",
+      "id": "d2ae1ef3-9540-4a4b-9572-44208b3e4f7f",
       "name": "Select_By_Name",
       "credentials": {
         "postgres": {
-          "id": "dnO3p7Dq5udUQp1l",
+          "id": "CgQpQfgjzrWyEoSG",
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "chat_histories",
+          "mode": "list",
+          "cachedResultName": "chat_histories"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "session_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.sessionId }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -580,
+        140
+      ],
+      "id": "df9623a2-df3d-42a3-a805-782b01fa4d32",
+      "name": "Obtain Last Response",
+      "credentials": {
+        "postgres": {
+          "id": "CgQpQfgjzrWyEoSG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.message.content }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "About Inventory Planning",
+              "description": "The message contains a proposed inventory change that requires confirmation. It lists modifications such as stock additions, removals, or new product registrations but does not indicate that the changes have already been executed."
+            },
+            {
+              "category": "Not About Inventory Planning",
+              "description": "The message contains a confirmation of changes applied or whatever that is not a proposed inventory change that requires confirmation "
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json.\n\nYou can only classify the text in one category"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        140
+      ],
+      "id": "71f35c29-0734-4568-a1f1-c90b04e56167",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a723c98c-d9ff-4b7b-9b8e-77888b3ff325",
+              "name": "text",
+              "value": "=The previous proposal was: \n\"\n{{ $json.message.content }}\n\"\n\n- Combine prior and current changes for the same product into a net adjustment (e.g., additions, reductions, or corrections like \"actually add X\").  \n- Interpret \"X más\" (or similar, like \"compré más\") as adding to the last proposed product if applicable.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f6f4f37a-fc0e-4c4c-abdc-e7aa178d488e",
+      "name": "Prompt"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-exp:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        360
+      ],
+      "id": "410ba36c-3052-438f-9239-6e60a4c15c07",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "9FL9g9uowIzkMtus",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eecfc05e-884a-45a4-9f1e-689bc233a023",
+              "name": "text",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        240
+      ],
+      "id": "9b69f007-c028-4003-8b00-4ffbb7b2f800",
+      "name": "Prompt1",
+      "alwaysOutputData": true
     }
   ],
   "pinData": {},
@@ -140,7 +283,7 @@
       "main": [
         [
           {
-            "node": "Nullius AI Inventory Planner Agent",
+            "node": "Obtain Last Response",
             "type": "main",
             "index": 0
           }
@@ -169,11 +312,6 @@
         ]
       ]
     },
-    "Nullius AI Inventory Planner Agent": {
-      "main": [
-        []
-      ]
-    },
     "Select_By_Name": {
       "ai_tool": [
         [
@@ -184,17 +322,79 @@
           }
         ]
       ]
+    },
+    "Obtain Last Response": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt": {
+      "main": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt1": {
+      "main": [
+        [
+          {
+            "node": "Nullius AI Inventory Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "29c9f3b3-cec9-406b-8be6-5443d63edbeb",
+  "versionId": "90711eb5-7d3f-4446-a686-7e6e823b0e3d",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
+    "instanceId": "eba7d039e685d4faa953c65a15f8191650dbc423f404d714b7685bdd9188bc2a"
   },
-  "id": "fFaCIM4n7wrw7Qv7",
+  "id": "shbFAOcbqNGdAaWl",
   "tags": []
 }

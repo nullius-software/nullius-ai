@@ -20,7 +20,7 @@
         0,
         0
       ],
-      "id": "a3d0c085-80c9-4c2a-9f2b-e49850d60d42",
+      "id": "88f55b90-22ca-458a-b613-55945c4b3feb",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -34,11 +34,11 @@
         260,
         220
       ],
-      "id": "75d6f841-786f-492f-9cf5-35b891528f77",
+      "id": "6a2d3792-4fea-4b24-82a3-a76e47f6857c",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "mvQpgkZtqsNRA84u",
+          "id": "9FL9g9uowIzkMtus",
           "name": "OpenRouter account"
         }
       }
@@ -57,7 +57,7 @@
         220,
         0
       ],
-      "id": "19c733ad-9b13-4723-aaeb-18f37ebd65cb",
+      "id": "1a24f8b5-23c3-4356-9691-3c0d340f3625",
       "name": "Parse Response Agent"
     }
   ],
@@ -84,22 +84,17 @@
           }
         ]
       ]
-    },
-    "Parse Response Agent": {
-      "main": [
-        []
-      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "31a3571d-2bf0-49ee-aa00-daa2f99fc820",
+  "versionId": "1f5d7e05-a266-4b16-87d8-36e53ac93de6",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "86d6130756d46403661eb733f8fe5c2e3923b9c440015366aa3cd74b76f57c5a"
+    "instanceId": "eba7d039e685d4faa953c65a15f8191650dbc423f404d714b7685bdd9188bc2a"
   },
-  "id": "UfVzmrG031XMqDSZ",
+  "id": "Nikh1XB7F8RpOx7g",
   "tags": []
 }
