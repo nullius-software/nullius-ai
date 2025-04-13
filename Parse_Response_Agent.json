@@ -20,7 +20,7 @@
         0,
         0
       ],
-      "id": "88f55b90-22ca-458a-b613-55945c4b3feb",
+      "id": "f89cd7e1-eb20-467d-ad63-00d09645353d",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -31,14 +31,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        260,
-        220
+        180,
+        200
       ],
-      "id": "6a2d3792-4fea-4b24-82a3-a76e47f6857c",
+      "id": "6117544a-0df1-4c48-a786-d6b5e7688527",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "9FL9g9uowIzkMtus",
+          "id": "DJ99P62ExqPaQhky",
           "name": "OpenRouter account"
         }
       }
@@ -47,18 +47,22 @@
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.text }}",
-        "options": {
-          "systemMessage": "=Role:\nYou are a text parsing agent. Your only task is to parse the message you receive and return it exactly as given, without modifying its content except for language translation.\n\nInstructions:\n🚨 STRICT RULES:\n✅ DO NOT change, add, or remove any content from the message.\n✅ DO NOT generate, interpret, or infer any kind of response.\n✅ DO NOT include any additional context, explanations, or comments.\n✅ DO NOT include anything related to n8n.\n✅ DO NOT reject, alter, or block the message. Return it as instructed.\n\n🔹 If the message is in a language different from Spanish, translate it fully and directly without shortening, summarizing, or omitting any part of the text.\n\n🔹 If the message is a question or user input, DO NOT answer it. Simply format and translate (if necessary).\n\nFormatting Rules (Only Allowed HTML Tags)\n✅ Use only the following Telegram-supported HTML tags:\n\n<b> → Bold\n<i> → Italic\n<u> → Underline\n<s> → Strikethrough\n<code> → Inline code\n<pre> → Code blocks\n<a href=\"URL\"> → Hyperlinks\n🚨 IMPORTANT:\n❌ DO NOT use <ul>, <br>, <span>, <d> or <p> tags.\n❌ DO NOT apply any additional formatting beyond the allowed tags.\n\nOutput Rules:\n✅ Return the message exactly as received, formatted using only the allowed HTML tags.\n✅ No extra text, explanations, or formatting outside the allowed tags.\n✅ DO NOT reject or block any message. Return it exactly as required.\n\nKey Fix: 🔥\n🛑 Under no circumstances should you generate a response. Your role is purely to format and translate, not to interpret, validate, or block the message."
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Role: You are a text parsing agent. Your only task is to parse the message you receive and return it exactly as given, without modifying its content except for language translation.  Instructions: 🚨 STRICT RULES: ✅ DO NOT change, add, or remove any content from the message. ✅ DO NOT generate, interpret, or infer any kind of response. ✅ DO NOT include any additional context, explanations, or comments. ✅ DO NOT include anything related to n8n. ✅ DO NOT reject, alter, or block the message. Return it as instructed.  🔹 If the message is in a language different from Spanish, translate it fully and directly without shortening, summarizing, or omitting any part of the text.  🔹 If the message is a question or user input, DO NOT answer it. Simply format and translate (if necessary).  Formatting Rules (Only Allowed HTML Tags) ✅ Use only the following Telegram-supported HTML tags:  <b> → Bold <i> → Italic <u> → Underline <s> → Strikethrough <code> → Inline code <pre> → Code blocks <a href=\"URL\"> → Hyperlinks 🚨 IMPORTANT: ❌ DO NOT use <ul>, <br>, <span>, <d> or <p> tags. ❌ DO NOT apply any additional formatting beyond the allowed tags.  Output Rules: ✅ Return the message exactly as received, formatted using only the allowed HTML tags. ✅ No extra text, explanations, or formatting outside the allowed tags. ✅ DO NOT reject or block any message. Return it exactly as required.  Key Fix: 🔥 🛑 Under no circumstances should you generate a response. Your role is purely to format and translate, not to interpret, validate, or block the message."
+            }
+          ]
         }
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
       "position": [
         220,
         0
       ],
-      "id": "1a24f8b5-23c3-4356-9691-3c0d340f3625",
-      "name": "Parse Response Agent"
+      "id": "143db21d-c3fb-45c3-94b0-5938b7e4b322",
+      "name": "Parse Response LLM Chain"
     }
   ],
   "pinData": {},
@@ -67,7 +71,7 @@
       "main": [
         [
           {
-            "node": "Parse Response Agent",
+            "node": "Parse Response LLM Chain",
             "type": "main",
             "index": 0
           }
@@ -78,7 +82,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "Parse Response Agent",
+            "node": "Parse Response LLM Chain",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -90,11 +94,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "1f5d7e05-a266-4b16-87d8-36e53ac93de6",
+  "versionId": "b54706d4-1747-46a0-93aa-a8d5c0bcc96f",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "eba7d039e685d4faa953c65a15f8191650dbc423f404d714b7685bdd9188bc2a"
+    "instanceId": "807311775c7585ed35e884f85091e51bb5aa58467a63a991e483dc935acd5061"
   },
-  "id": "Nikh1XB7F8RpOx7g",
+  "id": "1DRRsXUpqpJCNqQD",
   "tags": []
 }

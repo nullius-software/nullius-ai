@@ -21,117 +21,11 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -780,
-        140
+        -660,
+        100
       ],
-      "id": "c07dc2f5-57b2-4a78-96b4-9605cfbadb2c",
+      "id": "1a1d886e-6b8c-418b-9d2e-590fd0053a0f",
       "name": "When Executed by Another Workflow"
-    },
-    {
-      "parameters": {
-        "options": {
-          "maxRetries": 1
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        300,
-        360
-      ],
-      "id": "77eeebed-b940-4314-a124-ee2034fad771",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "9FL9g9uowIzkMtus",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId }}",
-        "tableName": "chat_histories",
-        "contextWindowLength": 0
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
-      "typeVersion": 1.3,
-      "position": [
-        480,
-        360
-      ],
-      "id": "468622e4-b570-4f37-a1da-1c3ac1916eb9",
-      "name": "Postgres Chat Memory",
-      "credentials": {
-        "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $('When Executed by Another Workflow').item.json.text }}",
-        "options": {
-          "systemMessage": "=Role:\nYou are an operations assistant for small businesses, focused solely on proposing inventory changes.\nRules:  \nOnly suggest inventory changes, nothing else.  \n\nNever modify inventory or show total stock—only propose changes.  \n\nVerify all products before responding.\n\nExecution Flow:  \nAnalyze Input:  \nExtract products and quantities from the current input.  \n\nInterpret \"X más\" (or similar, like \"compré más\", \"otras X\") as a purchase unless specified as sales/losses.  \n\nDetect renaming (\"rename X to Y\") or deletion (\"delete X\").  \n\nAdjust for corrections (e.g., \"actually add X\" or \"reduce by X\").\n\nProcess Products:  \nUse full product names as given, singularized only for querying.  \n\nCombine multiple changes for the same product into a net adjustment.  \n\nCall Select_By_Name once per unique product before responding.\n\nPropose Changes:  \nIf deleting: \"Eliminar producto '{product}'.\"  \n\nIf renaming: \"Renombrar producto '{old_name}' a '{new_name}'.\"  \n\nIf product exists: \"Increase/Reduce stock of '{product}' by {quantity}.\"  \n\nIf similar: \"I couldn’t find '{product}', but there’s '{similar_product}'. Is this it, or create '{product}'?\"  \n\nIf new: \"Register '{product}' with {quantity} units.\"\n\nRespond:  \nStart with a friendly tone (e.g., \"¡Genial!\" for adds, \"¡Qué buena venta!\" for sales, \"Lamento la pérdida\" for losses).  \n\nWrite \"Propuesta:\" once, followed by each product change on a new line with + (add) or - (reduce).  \n\nAsk \"¿Confirmas este cambio?\"  \n\nUse quotes (\"...\") for product names.\n\nTools:  \nSelect_By_Name: Check product existence (input: singular full name; call once per product).\n\n{{ $json.text }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        360,
-        140
-      ],
-      "id": "a2c05b6a-b2a6-4676-953d-3a6c5253ed9e",
-      "name": "Nullius AI Inventory Planner Agent"
-    },
-    {
-      "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "Use this tool to check if a product exists in the inventory by name. You must call this tool for every product mentioned by the user before generating any response. If the product does not exist, this tool will return similar matches (if available) or confirm that no match was found.",
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "products",
-          "mode": "list",
-          "cachedResultName": "products"
-        },
-        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
-        "where": {
-          "values": [
-            {
-              "column": "name",
-              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
-            },
-            {
-              "column": "organization_id",
-              "value": "={{ $('When Executed by Another Workflow').item.json.organizationId }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.5,
-      "position": [
-        660,
-        360
-      ],
-      "id": "d2ae1ef3-9540-4a4b-9572-44208b3e4f7f",
-      "name": "Select_By_Name",
-      "credentials": {
-        "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
-          "name": "Postgres account"
-        }
-      }
     },
     {
       "parameters": {
@@ -169,15 +63,36 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -580,
-        140
+        -460,
+        100
       ],
-      "id": "df9623a2-df3d-42a3-a805-782b01fa4d32",
+      "id": "f602b04a-a336-4e6f-ab52-99086a262e8e",
       "name": "Obtain Last Response",
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
+          "id": "yRaFqQ1cs14EC4hJ",
           "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-lite-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        820,
+        700
+      ],
+      "id": "5137e4d1-16b4-4beb-9492-6a229b86bc2d",
+      "name": "Gemini 2.0",
+      "credentials": {
+        "openRouterApi": {
+          "id": "DJ99P62ExqPaQhky",
+          "name": "OpenRouter account"
         }
       }
     },
@@ -187,68 +102,229 @@
         "categories": {
           "categories": [
             {
-              "category": "About Inventory Planning",
-              "description": "The message contains a proposed inventory change that requires confirmation. It lists modifications such as stock additions, removals, or new product registrations but does not indicate that the changes have already been executed."
+              "category": "Proposal",
+              "description": "The message suggests inventory changes (e.g., stock additions, removals, price adjustments, or new product registrations) that require confirmation and have not been executed. It may explicitly contain \"Propuesta\" or imply a pending action."
             },
             {
-              "category": "Not About Inventory Planning",
-              "description": "The message contains a confirmation of changes applied or whatever that is not a proposed inventory change that requires confirmation "
+              "category": "Not a Proposal",
+              "description": "The message is a greeting, a confirmation of changes already applied, or any content unrelated to proposing inventory changes requiring confirmation."
             }
           ]
         },
         "options": {
-          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json.\n\nYou can only classify the text in one category"
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, based on whether it is a proposal requiring confirmation or not. A proposal suggests inventory changes (e.g., stock updates, price adjustments, or new registrations) that have not yet been executed. Greetings, confirmations of completed changes, or unrelated content are not proposals. Use the provided formatting instructions below. Do not explain, and only output the JSON. You can only classify the text in one category."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.textClassifier",
       "typeVersion": 1,
       "position": [
-        -380,
-        140
+        -240,
+        100
       ],
-      "id": "71f35c29-0734-4568-a1f1-c90b04e56167",
-      "name": "Text Classifier"
+      "id": "d209eb94-4dd2-4f3c-ae64-9c2cfcd997a6",
+      "name": "Previous proposal to merge"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "a723c98c-d9ff-4b7b-9b8e-77888b3ff325",
-              "name": "text",
-              "value": "=The previous proposal was: \n\"\n{{ $json.message.content }}\n\"\n\n- Combine prior and current changes for the same product into a net adjustment (e.g., additions, reductions, or corrections like \"actually add X\").  \n- Interpret \"X más\" (or similar, like \"compré más\") as adding to the last proposed product if applicable.",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
+        "options": {
+          "prompt": "Instructions:\n--------------\n{instructions}\n--------------\nCompletion:\n--------------\n{completion}\n--------------\n\nAbove, the Completion did not satisfy the constraints given in the Instructions.\nError:\n--------------\n{error}\n--------------\n\nPlease try again. Please only respond with an answer that satisfies the constraints laid out in the Instructions:"
+        }
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        0,
-        0
-      ],
-      "id": "f6f4f37a-fc0e-4c4c-abdc-e7aa178d488e",
-      "name": "Prompt"
-    },
-    {
-      "parameters": {
-        "model": "google/gemini-2.0-flash-exp:free",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
       "typeVersion": 1,
       "position": [
-        -380,
-        360
+        520,
+        380
       ],
-      "id": "410ba36c-3052-438f-9239-6e60a4c15c07",
-      "name": "OpenRouter Chat Model1",
+      "id": "3fa319a4-ac9e-4763-8fd0-40377caa2b1a",
+      "name": "Auto-fixing Output Parser1"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": { \"type\": \"string\" },\n          \"preserveProductName\": { \"type\": \"boolean\" },\n          \"productWithMultiUnitTerm\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"name\": { \"type\": \"string\" },\n              \"quantity\": { \"type\": \"number\" }\n            },\n            \"required\": [\"name\", \"quantity\"]\n          },\n          \"actions\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"type\": {\n                  \"type\": \"string\",\n                  \"enum\": [\"Add\", \"Reduce\", \"SetStock\", \"AdjustPrice\", \"Rename\", \"Remove\"]\n                },\n                \"quantity\": { \"type\": \"number\" },\n                \"price\": { \"type\": \"number\" },\n                \"newName\": { \"type\": \"string\" }\n              },\n              \"required\": [\"type\"]\n            }\n          }\n        },\n        \"required\": [\"name\", \"actions\", \"preserveProductName\"]\n      }\n    }\n  },\n  \"required\": [\"products\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        540
+      ],
+      "id": "fc2769ea-7987-49d3-89db-99a07300af58",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        120
+      ],
+      "id": "14513275-9fa4-4266-a606-673504a8fc07",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.products",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        840,
+        120
+      ],
+      "id": "c38de6ee-4b33-49ac-9a3c-afd8e8bc57a6",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT name\nFROM products\nWHERE similarity(unaccent(name), unaccent($1)) > 0.3\n  AND organization_id = $2\nORDER BY similarity(unaccent(name), unaccent($1)) DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Loop Over Items').item.json.name }}, {{ $('When Executed by Another Workflow').item.json.organizationId }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3040,
+        680
+      ],
+      "id": "fc206af8-bc68-4add-b215-70c3ff9cbb3b",
+      "name": "Find Flexible Product",
+      "alwaysOutputData": true,
       "credentials": {
-        "openRouterApi": {
-          "id": "9FL9g9uowIzkMtus",
-          "name": "OpenRouter account"
+        "postgres": {
+          "id": "yRaFqQ1cs14EC4hJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const productSearched = $(\"Loop Over Items\").first().json.name;\nlet product = $input.first().json.name || productSearched;\nconst actions = $(\"Loop Over Items\").first().json.actions;\n\nconst obtainType = () => {\n  if ($input.first().json.name) {\n    if ($input.first().json.exactProduct) {\n      return \"Found\";\n    }\n    \n    return \"Found Similar\";\n  }\n\n  return \"Not Found\";\n};\n\nconst type = obtainType();\n\nconst obtainPropose = (action) => {\n  if (action.type == \"AdjustPrice\") {\n    const price = action.price;\n    return `Change the price of \"${product}\" to $${price}`;\n  }\n\n  if (action.type == \"Rename\") {\n    const newName = action.newName;\n    return `Rename \"${product}\" to \"${newName}\"`;\n  }\n\n  if (action.type == \"Remove\") {\n    return `Remove \"${product}\"`;\n  }\n\n  const quantity = action.quantity;\n\n  if (action.type == \"Add\" && type == \"Not Found\") {\n    const singularProduct = $('Singular and Plural name LLM Chain').first().json.output.singular\n    product = singularProduct\n    return `Register \"${singularProduct}\" with ${quantity} initial units`;\n  }\n\n  if (action.type == \"SetStock\") action.type = \"Set stock at\";\n\n  return `${action.type} ${quantity} units to \"${product}\"`;\n};\n\nconst propose = actions.map((action) => obtainPropose(action)).join(\"\\n\");\n\nreturn { propose, type, productSearched, product };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3140,
+        260
+      ],
+      "id": "2771601f-c96d-4184-964e-b016f86c3b4d",
+      "name": "Obtain Proposal"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        -40
+      ],
+      "id": "0fe63f2a-b1a8-4bbd-b637-e7fa7fc2014e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId }}",
+        "tableName": "chat_histories",
+        "contextWindowLength": 1
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1860,
+        60
+      ],
+      "id": "f0c3491d-9ee7-4517-bdae-2fa22fd970b5",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "yRaFqQ1cs14EC4hJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        480
+      ],
+      "id": "ed0d39a0-e19e-4e5c-bbb0-d22a393383db",
+      "name": "Auto-fixing Output Parser"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"singular\": {\n      \"type\": \"string\"\n    },\n    \"plural\": {\n      \"type\": \"string\"\n    },\n    \"productWithMultiUnitTerm\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"singular\": { \"type\": \"string\" },\n        \"plural\": { \"type\": \"string\" }\n      },\n      \"required\": [\"singular\", \"plural\"]\n    }\n  },\n  \"required\": [\"singular\", \"plural\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1500,
+        700
+      ],
+      "id": "ff8d17c6-8ae1-45b2-9c90-34f06b05dd8f",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT name FROM products WHERE unaccent(name) ILIKE unaccent($1) AND organization_id = $2 LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $('Singular And Plural to Search').item.json.output.plural }}, {{ $('When Executed by Another Workflow').item.json.organizationId }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2220,
+        460
+      ],
+      "id": "3ce53d0d-48dc-4910-a21f-f4a30f4d79f9",
+      "name": "Find Exact Plural Product",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "yRaFqQ1cs14EC4hJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT name FROM products WHERE unaccent(name) ILIKE unaccent($1) AND organization_id = $2 LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $json.output.singular }}, {{ $('When Executed by Another Workflow').item.json.organizationId }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        260
+      ],
+      "id": "7e2f413b-5675-4da8-b1a1-c2777de0eab9",
+      "name": "Find Exact Singular Product",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "yRaFqQ1cs14EC4hJ",
+          "name": "Postgres account"
         }
       }
     },
@@ -257,9 +333,316 @@
         "assignments": {
           "assignments": [
             {
+              "id": "278e996c-9b0e-4965-b51a-66b900171117",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "21a31df2-e587-45bd-be49-e7e8b0f6937c",
+              "name": "exactProduct",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2700,
+        260
+      ],
+      "id": "d303d024-e9a2-4f46-8212-28bdfa5ef153",
+      "name": "Exact Product"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=name={{ $json.name }}\n{{ $json.productWithMultiUnitTerm ? `productWithMultiUnitTerm=${$json.productWithMultiUnitTerm.name}` : '' }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a product name normalizer.\nYou receive:\nname: the cleaned product name (without packaging terms).\nOptionally, productWithMultiUnitTerm: a product name that includes a multi-unit packaging term (like \"pack\", \"caja\", \"paquete\", etc).\n\nYour job is to:\nReturn the singular and plural form of name, preserving any brand names or distinctive elements.\nIf productWithMultiUnitTerm is provided, return its singular and plural forms as well, under a productWithMultiUnitTerm object.\nIf it's not provided, do not include the productWithMultiUnitTerm field at all.\n\nReturn a JSON object in the following format:\n{\n  \"singular\": \"…\",\n  \"plural\": \"…\",\n  \"productWithMultiUnitTerm\": {\n    \"singular\": \"…\",\n    \"plural\": \"…\"\n  }\n}\n\nIf productWithMultiUnitTerm is not provided, exclude it entirely from the output."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1300,
+        260
+      ],
+      "id": "68e7b1bf-0b9a-49af-8437-e8ec845de6f6",
+      "name": "Singular and Plural name LLM Chain"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "681229e6-a0c3-4639-b83e-9d9066b31480",
+              "leftValue": "={{ $('Loop Over Items').item.json.preserveProductName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2860,
+        660
+      ],
+      "id": "c81336c3-c880-4277-bc05-d1e7aa10143d",
+      "name": "Preserve Product Name"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "70791b0a-b1c0-45c1-9c12-159175890f70",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2420,
+        460
+      ],
+      "id": "892eabac-1e87-4825-bca3-14c8a0fd57cf",
+      "name": "Found Plural"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0775a345-89e8-4439-9467-9aa0d968cbf5",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2120,
+        260
+      ],
+      "id": "6a08dbed-34e4-421e-92bb-7a8d07ccfe62",
+      "name": "Found Singular"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.first().json.data;\n\nconst productIndexMap = {};\nconst duplicateIndexGroups = {};\n\nitems.forEach((item, index) => {\n  const key = item.product;\n  if (productIndexMap[key] !== undefined) {\n    if (!duplicateIndexGroups[key]) {\n      duplicateIndexGroups[key] = [productIndexMap[key]];\n    }\n    duplicateIndexGroups[key].push(index);\n  } else {\n    productIndexMap[key] = index;\n  }\n});\n\nObject.values(duplicateIndexGroups).forEach((indices) => {\n  let foundIndex = indices.find((i) => items[i].type === \"Found\");\n\n  indices.forEach((i) => {\n    if (i !== foundIndex) {\n      const { productSearched } = items[i];\n      items[i] = {\n        propose: `Register \"${productSearched}\" with no initial units`,\n        type: \"Not Found\",\n        productSearched,\n        product: productSearched,\n      };\n    }\n  });\n});\n\nreturn { data: items };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -40
+      ],
+      "id": "28ebc5d0-1f38-4804-bd60-36fd3095381d",
+      "name": "Depure Duplicate Products"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "=Role:\nYou are a warm, professional inventory assistant. You receive a list of product proposals and respond with a short, friendly, and structured message. Your tone is kind, confident, and helpful, like a trusted coworker.\n\nInstructions:\n\nStart with a short, positive sentence to set a friendly tone. Only one sentence.\n\nIf any products have \"type\": \"Found Similar\":\nSay that the product names you searched for weren’t found exactly, but similar matches were.\nList each pair using the productSearched and product fields, formatted as:\n\"productSearched\" → \"product\"\nSeparate multiple pairs with commas, and use “and” before the last one.\n\n✅ Only include this section if type is exactly \"Found Similar\".\n❌ Never include products with type \"Found\" in this section — even if productSearched and product look different.\n\nIf any products have \"type\": \"Not Found\":\nSay they weren’t found and are being proposed for registration.\nList the productSearched values, separated by commas, using \"and\" before the last one.\nThen close the paragraph with: “Would you like to use these suggestions, or make any corrections?”\n\nAfter a blank line, list the proposals like this:\n\n```\nProposal:\n- [propose]\n- [propose]\n\nDo you confirm these changes?\n```\n\nOutput Rules:\nUse only the data you receive.\nNever modify or infer names — always use the exact productSearched, product, and propose values as provided.\nDo not alter spelling, casing, accents, or structure.\nNever say a product was found if its type is \"Not Found\".\nNever include a product in the \"Found Similar\" section unless its type is exactly \"Found Similar\".\nNever repeat the closing question inside the proposal section.\nDo not use tables. Keep the format plain text and clean.\nBe warm, clear, and concise."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1520,
+        -40
+      ],
+      "id": "afba3c9e-7e6c-4229-b8d2-49c6b84b1c9b",
+      "name": "Inventory Response Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3fe15642-6744-4bcf-bfce-89de3f0e255f",
+              "name": "multiTermSearched",
+              "value": "={{ $json.multiTermSearched || false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c9feb5c1-7bfa-43a0-ad21-e00ed675e385",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        260
+      ],
+      "id": "ec3b2660-bb34-422a-9de3-19f3dfa0aa3f",
+      "name": "Singular And Plural to Search"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1dde225c-1f7c-40a9-bd4a-350cb29718ed",
+              "leftValue": "={{ $('Singular And Plural to Search').item.json.multiTermSearched }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "33e84b0e-c1a6-46fc-b148-784c6a4700e7",
+              "leftValue": "={{ $('Singular and Plural name LLM Chain').item.json.output.productWithMultiUnitTerm }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        560
+      ],
+      "id": "b5f6a86b-16d6-410b-9e86-4374aed95e55",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d60331db-a956-4c26-be31-94e82e31c736",
+              "name": "multiTermSearched",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "a5e14acc-7324-4c9d-9771-309c1eb32430",
+              "name": "output",
+              "value": "={{ $('Singular and Plural name LLM Chain').item.json.output.productWithMultiUnitTerm }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2760,
+        440
+      ],
+      "id": "56d6c2f7-3b7b-4daf-8317-7f9cc26c3f6c",
+      "name": "Product With Multi Unit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text.replaceAll('\"', '*')}}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Role:\nYou are an inventory data extractor. Your task is to analyze the user's current message and extract a JSON list of products and the corresponding inventory actions to perform.\n\nRules:\n\nIndependent Parsing:\n\nOperate only on the current user message.\n\nDo not reference or rely on past messages or proposals.\n\nAction Detection:\nDetect and include the appropriate action(s) for each product, using the following logic:\n\n\"Add\": Use for phrases like “bought”, “added”, or any quantity mentioned without a specific verb. Always include a \"quantity\" field (default to 1 if not provided).\n\n\"Reduce\": Use for “sold”, “removed”, “have less”, etc.\n\n\"SetStock\": Use when phrases indicate an exact stock level (e.g., “have exactly”, “remaining”).\n\n\"AdjustPrice\": Use for price changes like “change the price to” or “adjust price to”. Must include \"price\" when available.\n\n\"Rename\": Use when asked to rename a product. Include both \"name\" and \"newName\" fields.\n\n\"Remove\": Use when told to delete or remove a product. Do not include \"quantity\".\n\nPreserve Product Name Detection:\n\nExamine the original user message.\n\nIf the product name used in the \"name\" field is enclosed in asterisks (*), set \"preserveProductName\": true.\n\nOtherwise, set \"preserveProductName\": false.\n\nFor \"Rename\" actions, apply this rule only to the \"name\" field. Do not evaluate or apply it to the \"newName\" field.\n\nMulti-Unit Packaging Logic:\n\nIf a product includes packaging terms (e.g., “pack”, “paquete”, “caja”, “bolsa”, “bandeja”, “blister”, or their plurals):\n\nThe \"name\" field must only include the base product name, omitting the packaging term.\n\nIf a standard unit count exists for the product and packaging, multiply the provided quantity by it.\n\nAdd a \"productWithMultiUnitTerm\" object containing:\n\n\"name\": the full original string as written by the user, including the packaging term.\n\n\"quantity\": the original quantity mentioned in the user message.\n\nIf the product does not include any recognized packaging term:\n\nDo not include the productWithMultiUnitTerm field at all. Never include it with null, empty, or undefined values.\n\nPackaging Standards:\nUse the following dictionary to determine standard unit counts. Compare product names in lowercase and ignore accents.\n{\n  \"packagingStandards\": {\n    \"cerveza\": { \"caja\": 12, \"pack\": 6 },\n    \"coca cola\": { \"pack\": 8 },\n    \"papas fritas\": { \"bolsa\": 1 }\n  }\n}\nOutput Format:\n\nRespond only with a raw JSON array of product objects.\n\nDo not include any explanations, markdown formatting, or extra text.\n\nEach product object must include:\n\n\"name\": normalized product name (without packaging terms)\n\n\"preserveProductName\": true or false\n\n\"actions\": array of action objects with keys like \"type\", \"quantity\", \"price\", \"newName\", etc.\n\n\"productWithMultiUnitTerm\": only if a packaging term was detected; otherwise, omit this field entirely.\n\nExecution Flow Summary:\n\nParse the full user message.\n\nIdentify product mentions and detect actions.\n\nNormalize \"name\" (remove packaging term if present).\n\nDetermine preserveProductName only from the \"name\" field using asterisks.\n\nApply packaging logic:\nIf applicable, adjust quantity and include productWithMultiUnitTerm.\nIf not applicable, omit productWithMultiUnitTerm entirely.\nReturn the result as a raw JSON array."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        500,
+        120
+      ],
+      "id": "a2bafa0a-6e82-4ab7-a63b-ff9a130e4f88",
+      "name": "Planify Actions LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
               "id": "eecfc05e-884a-45a4-9f1e-689bc233a023",
               "name": "text",
-              "value": "",
+              "value": "={{ $json.text || $('When Executed by Another Workflow').item.json.text }}",
               "type": "string"
             }
           ]
@@ -269,15 +652,46 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        0,
-        240
+        280,
+        120
       ],
-      "id": "9b69f007-c028-4003-8b00-4ffbb7b2f800",
-      "name": "Prompt1",
+      "id": "1e8143d5-226a-4af9-b13a-4e39c584d95e",
+      "name": "asking",
       "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. correction:\n{{ $('When Executed by Another Workflow').item.json.text }}.\n\n2. proposal to correct:\n{{ $json.message.content.split('Proposal:')[1] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a correction assistant for product registration proposals. You will receive two inputs:\n• proposal to correct: A block of text containing a section that starts with \"Proposal:\" followed by a list of items.\n• correction: A message from the user that may adjust, correct, or add items to the list.\n\nYour task is to return the \"Proposal:\" section with the list updated according to the user's correction.\n\nFollow this process:\n\nParse the correction message to separate it into distinct tasks. For example, if the correction says:\n\n\"cambia el nombre de coca-cola de 2l por coca cola de 2l\"\n\"no es terrabussy, es Terrabusi.\"\nthen you should identify these as two separate tasks.\n\nFor each task:\n• Determine if it refers to an existing item in the proposal by examining item names, descriptions, or quantities. Allow for minor misspellings or variations if the intent is clear.\n• If a matching item is found, apply the correction (such as renaming, correcting a misspelling, updating quantity, or similar) and consider that task \"applied\". Do not include any trace of that task as a new item.\n• If no matching item exists (or the instruction is too ambiguous to apply unambiguously), treat the task as \"unapplied\".\n\nBuild the updated proposal:\n• Start with the original list of items, modifying those that were corrected.\n• Append any unapplied tasks as new items at the end of the list. Each unapplied task must be added exactly as written in the correction, preserving the user's original wording and intention.\n\nOutput format:\n• The output must start with \"Proposal:\".\n• Each item (original, modified, or newly added) must be on its own line prefixed with \"-\" (a dash followed by a space).\n• Do not include any extra text, explanations, or formatting beyond the updated proposal list.\n\nSpecial cases:\n• If a correction instruction is ambiguous and could apply to multiple items, apply it to the most relevant item based on context; if still unclear, treat it as an unapplied task.\n• If no instructions can be applied and there are no unapplied tasks, return the original \"Proposal:\" section unchanged.\n\nBy following these guidelines, you will correctly update existing items in the proposal based on the user's corrections while preserving any instructions that cannot be mapped to current items."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        20,
+        -20
+      ],
+      "id": "8d4c7e4d-1a6d-4e56-af5b-ff67e46804a5",
+      "name": "Merge Proposal LLM Chain"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "text": "cambia el nombre de coca-cola de 2l por coca cola de 2l y no es terrabussy, es Terrabusi",
+          "sessionId": "2066318640",
+          "organizationId": 5
+        }
+      }
+    ]
+  },
   "connections": {
     "When Executed by Another Workflow": {
       "main": [
@@ -290,95 +704,369 @@
         ]
       ]
     },
-    "OpenRouter Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Nullius AI Inventory Planner Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Postgres Chat Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "Nullius AI Inventory Planner Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Select_By_Name": {
-      "ai_tool": [
-        [
-          {
-            "node": "Nullius AI Inventory Planner Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Obtain Last Response": {
       "main": [
         [
           {
-            "node": "Text Classifier",
+            "node": "Previous proposal to merge",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Text Classifier": {
+    "Gemini 2.0": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Auto-fixing Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Inventory Response Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Previous proposal to merge",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Planify Actions LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Singular and Plural name LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Merge Proposal LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Previous proposal to merge": {
       "main": [
         [
           {
-            "node": "Prompt",
+            "node": "Merge Proposal LLM Chain",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Prompt1",
+            "node": "asking",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prompt": {
+    "Auto-fixing Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Planify Actions LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
       "main": [
         [
           {
-            "node": "Nullius AI Inventory Planner Agent",
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Singular and Plural name LLM Chain",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenRouter Chat Model1": {
-      "ai_languageModel": [
+    "Split Out": {
+      "main": [
         [
           {
-            "node": "Text Classifier",
-            "type": "ai_languageModel",
+            "node": "Loop Over Items",
+            "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prompt1": {
+    "Find Flexible Product": {
       "main": [
         [
           {
-            "node": "Nullius AI Inventory Planner Agent",
+            "node": "Obtain Proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtain Proposal": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Depure Duplicate Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Inventory Response Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Singular and Plural name LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Exact Plural Product": {
+      "main": [
+        [
+          {
+            "node": "Found Plural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Exact Singular Product": {
+      "main": [
+        [
+          {
+            "node": "Found Singular",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exact Product": {
+      "main": [
+        [
+          {
+            "node": "Obtain Proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Singular and Plural name LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Singular And Plural to Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Product Name": {
+      "main": [
+        [
+          {
+            "node": "Obtain Proposal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Flexible Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found Plural": {
+      "main": [
+        [
+          {
+            "node": "Exact Product",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found Singular": {
+      "main": [
+        [
+          {
+            "node": "Exact Product",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Exact Plural Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Depure Duplicate Products": {
+      "main": [
+        [
+          {
+            "node": "Inventory Response Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Singular And Plural to Search": {
+      "main": [
+        [
+          {
+            "node": "Find Exact Singular Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Product With Multi Unit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preserve Product Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product With Multi Unit": {
+      "main": [
+        [
+          {
+            "node": "Singular And Plural to Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Planify Actions LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "asking": {
+      "main": [
+        [
+          {
+            "node": "Planify Actions LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Proposal LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "asking",
             "type": "main",
             "index": 0
           }
@@ -390,11 +1078,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "90711eb5-7d3f-4446-a686-7e6e823b0e3d",
+  "versionId": "d8ad8cb1-9e8d-42e7-acbe-11bf231dcd97",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "eba7d039e685d4faa953c65a15f8191650dbc423f404d714b7685bdd9188bc2a"
+    "instanceId": "807311775c7585ed35e884f85091e51bb5aa58467a63a991e483dc935acd5061"
   },
-  "id": "shbFAOcbqNGdAaWl",
+  "id": "GUOKOaaTUhaTaCCr",
   "tags": []
 }

@@ -24,15 +24,13 @@
         -200,
         200
       ],
-      "id": "18954be4-6bfe-4485-a214-00f373d29faf",
+      "id": "c5394032-e82c-4586-b482-6d6674ef9964",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
         "model": "google/gemini-2.0-flash-001",
-        "options": {
-          "maxRetries": 0
-        }
+        "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
@@ -40,11 +38,11 @@
         0,
         0
       ],
-      "id": "ac07b863-d2e9-4f29-bdb4-e1ccc24f9757",
+      "id": "5782bcbe-0ed1-429f-9568-b7466ac7f56e",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "9FL9g9uowIzkMtus",
+          "id": "DJ99P62ExqPaQhky",
           "name": "OpenRouter account"
         }
       }
@@ -54,7 +52,7 @@
         "promptType": "define",
         "text": "={{ $json.text }}",
         "options": {
-          "systemMessage": "Role:\nYou are DB Agent, responsible for executing inventory changes in a PostgreSQL database. You receive an approved proposal and convert it into precise database operations.\nTask:\n Extract product names exactly as written between double quotes (\"\"). Do not modify, change, or infer any product names.\n Analyze the proposal:  \nIf it’s a stock or attribute change: Use Select_By_Name to check if the product exists.  \nIf it exists → Use Update.  \n\nIf it doesn’t exist → Use Insert.\n\nIf it’s a rename proposal (e.g., \"Renombrar producto 'x' a 'y'\"):  \nUse Select_By_Name with the old name (\"x\") to find the product.  \n\nIf it exists → Use Update to change the name to the new name (\"y\").  \n\nIf it doesn’t exist → Report that the product wasn’t found.\n\nIf it’s a delete proposal (e.g., \"Eliminar producto 'x'\"):  \nUse Select_By_Name with the product name (\"x\") to find the product.  \n\nIf it exists → Use Delete with the product’s id to remove it.  \n\nIf it doesn’t exist → Report that the product wasn’t found.\n Ensure the operation was successful before confirming it.\n\nTools:\n Select_By_Name → Retrieve product attributes.  \nInput: \"name\" (full product name as provided).  \n\nOutput: Product information, including id, if found.\n Update → Modify an existing product.  \n\nInput: Product attributes to change (e.g., name, quantity).\n Insert → Add a new product if it doesn’t exist.  \n\nInput: Product attributes (e.g., name, quantity).\n Delete → Remove an existing product.  \n\nInput: Product id.\n\nResponse Format:\n Stock updated: \"Sprite\" → 10 units.\n Added \"Coca-Cola\" (12 units).\n Price changed: \"iPhone\" → $999.99.\n Renamed: \"Old Name\" → \"New Name\".\n Deleted: \"Product Name\".\n Product \"Name\" not found for renaming.\n Product \"Name\" not found for deletion.\nSTRICT RULES (DO NOT BREAK ):\n DO NOT invent or assume product names, quantities, or changes that were not explicitly requested.\n DO NOT modify the product name unless explicitly requested in a rename proposal. Use it exactly as written between double quotes (\"\").\n DO NOT add, remove, or alter information beyond what is explicitly stated in the approved proposal.\n Only confirm changes that were successfully executed."
+          "systemMessage": "=Role:\nYou are DB Agent, tasked with executing inventory changes in a PostgreSQL database based on an approved proposal.\nTask:  \nExtract Unique Product Names:  \nIdentify all product names exactly as written between double quotes (\"\") in the proposal.  \n\nBuild a list of unique product names, ensuring each name appears only once regardless of repetition in the proposal.\n\nProcess Each Product:  \nFor each unique product name in the list, perform the following exactly once:\na. Search: Use Select_By_Name with the exact name as provided.\nb. Act Based on Proposal:  \nStock or Attribute Change:  \nIf product exists (returns info), use Update.  \n\nIf product does not exist (no results), use Insert.\n\nRename (\"Rename product 'X' to 'Y'\"):  \nIf \"X\" exists, use Update to rename to \"Y\".  \n\nIf \"X\" does not exist, report: \"Product 'X' not found for renaming.\"\n\nDelete (\"Delete product 'X'\"):  \nIf \"X\" exists, use Delete with the product ID.  \n\nIf \"X\" does not exist, report: \"Product 'X' not found for deletion.\"\nc. Record Success: Only confirm operations that succeed.\n\nOutput and Terminate:  \nAfter processing all unique product names exactly once, generate the response in the specified format.  \n\nIf no changes were made, return the \"no changes\" message.  \n\nStop execution immediately after outputting the response.\n\nTools:  \nSelect_By_Name:  \nInput: \"name\": \"<exact product name between quotes>\"  \n\nOutput: Product info if found, no results if not.  \n\nSearches exact name with organization_id included.\n\nUpdate: Modify an existing product (e.g., name, stock, price).  \n\nInsert: Add a new product (e.g., name, stock, price).  \n\nDelete: Remove a product by ID.\n\nResponse Format:  \nStock updated: \"Product Name\" → X units.  \n\nAdded \"Product Name\" (X units).  \n\nPrice changed: \"Product Name\" → $X.XX.  \n\nRenamed: \"Old Name\" → \"New Name\".  \n\nDeleted: \"Product Name\".  \n\nProduct \"Name\" not found for renaming.  \n\nProduct \"Name\" not found for deletion.  \n\nNo changes:  \n\nNo changes were made. I’m here when you need me! Feel free to send text or audio messages to register your products!\n\nStrict Rules:  \nUse product names exactly as provided in quotes (\"\").  \n\nProcess each unique name only once—no repeated searches or operations.  \n\nDo not invent or assume data not in the proposal.  \n\nConfirm only successful changes.  \n\nTerminate immediately after generating the response."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -63,53 +61,8 @@
         20,
         200
       ],
-      "id": "231c8265-9bb6-4d44-9e42-f2593fd8dbeb",
+      "id": "f7022393-75b0-4c46-836d-02b337adc09e",
       "name": "Nullius AI DB Agent"
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "public",
-          "mode": "list",
-          "cachedResultName": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "products",
-          "mode": "list",
-          "cachedResultName": "products"
-        },
-        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
-        "where": {
-          "values": [
-            {
-              "column": "name",
-              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
-            },
-            {
-              "column": "organization_id",
-              "value": "={{ $json.organizationId }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.5,
-      "position": [
-        -40,
-        520
-      ],
-      "id": "0a4165ae-651b-4921-b844-ef3efd1d9358",
-      "name": "Select_By_Name",
-      "credentials": {
-        "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
-          "name": "Postgres account"
-        }
-      }
     },
     {
       "parameters": {
@@ -215,11 +168,11 @@
         140,
         520
       ],
-      "id": "f25a5102-960f-41e5-96cf-fd105ba9031f",
+      "id": "f3096045-0768-4149-bb78-6f157edb2129",
       "name": "Insert",
       "credentials": {
         "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
+          "id": "yRaFqQ1cs14EC4hJ",
           "name": "Postgres account"
         }
       }
@@ -330,11 +283,11 @@
         300,
         520
       ],
-      "id": "74f923e2-0eec-4dc7-9856-3c89de01a9f0",
+      "id": "0e8a1324-1c77-4633-a274-c93545d44eef",
       "name": "Update",
       "credentials": {
         "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
+          "id": "yRaFqQ1cs14EC4hJ",
           "name": "Postgres account"
         }
       }
@@ -350,11 +303,11 @@
         160,
         0
       ],
-      "id": "9ff7367f-5822-4330-9564-3bf6a72eabcf",
+      "id": "bc84947e-84f0-47d1-9713-d916f613ddab",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
+          "id": "yRaFqQ1cs14EC4hJ",
           "name": "Postgres account"
         }
       }
@@ -394,17 +347,70 @@
         460,
         520
       ],
-      "id": "dd842e23-dcd4-40af-ac66-6e46faf8f6c2",
+      "id": "6891b728-503f-4756-acdb-fc80983b3f7b",
       "name": "Delete",
       "credentials": {
         "postgres": {
-          "id": "CgQpQfgjzrWyEoSG",
+          "id": "yRaFqQ1cs14EC4hJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "products",
+          "mode": "list",
+          "cachedResultName": "products"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
+            },
+            {
+              "column": "organization_id",
+              "value": "={{ $json.organizationId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        -40,
+        520
+      ],
+      "id": "9244b6da-70c9-4feb-afe6-281c7c2d248d",
+      "name": "Select_By_Name",
+      "credentials": {
+        "postgres": {
+          "id": "yRaFqQ1cs14EC4hJ",
           "name": "Postgres account"
         }
       }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "text": "¡Claro, aquí tienes!\n\nPropuesta:  \nAjustar \"caja de papas fritas de 20kg\" aumentar el stock en 50 unidades.  \nAjustar \"Coca Cola de 3l\" aumentar el stock en 50 unidades.  \nAjustar \"vino toro\" aumentar el stock en 50 unidades.  \nAjustar \"barra de chocolate Felfort\" aumentar el stock en 50 unidades.  \nAjustar \"leche la serenisima\" aumentar el stock en 50 unidades.  \nAjustar \"alfajores Fulbito\" aumentar el stock en 50 unidades.  \n¿Confirma este cambio?",
+          "sessionId": "2066318640",
+          "organizationId": 5
+        }
+      }
+    ]
+  },
   "connections": {
     "When Executed by Another Workflow": {
       "main": [
@@ -423,17 +429,6 @@
           {
             "node": "Nullius AI DB Agent",
             "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Select_By_Name": {
-      "ai_tool": [
-        [
-          {
-            "node": "Nullius AI DB Agent",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -482,17 +477,28 @@
           }
         ]
       ]
+    },
+    "Select_By_Name": {
+      "ai_tool": [
+        [
+          {
+            "node": "Nullius AI DB Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "cb188974-d7be-49b3-9951-ac8460e47e1a",
+  "versionId": "32acb6ff-87cf-48e1-bb15-4b15f657a264",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "eba7d039e685d4faa953c65a15f8191650dbc423f404d714b7685bdd9188bc2a"
+    "instanceId": "807311775c7585ed35e884f85091e51bb5aa58467a63a991e483dc935acd5061"
   },
-  "id": "mVgHe9Ki400a3xoB",
+  "id": "ouyeurbVKyanYg7L",
   "tags": []
 }
